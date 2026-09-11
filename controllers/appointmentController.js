@@ -157,6 +157,46 @@ const getAppointmentById = async (id) => {
   return result.recordset[0] || null;
 };
 
+// Search appointments
+const getSearchedAppointments = async (search) => {
+  const pool = await connectDB();
+
+  const request = pool.request();
+
+  request.input(
+    "Search",
+    sql.NVarChar,
+    `%${search}%`
+  );
+
+  const result = await request.query(`
+    SELECT
+      a.AppointmentID,
+      a.PatientID,
+      a.AppointmentDate,
+      a.AppointmentTime,
+      a.Status,
+      a.Notes,
+      a.CreatedAt,
+      a.AppointmentService,
+      a.UserID,
+      p.FullName AS PatientName
+    FROM dbo.Appointments a
+    INNER JOIN dbo.Patients p
+      ON a.PatientID = p.PatientID
+    WHERE
+      p.FullName LIKE @Search
+      OR a.Status LIKE @Search
+      OR a.AppointmentService LIKE @Search
+      OR a.Notes LIKE @Search
+    ORDER BY
+      a.AppointmentDate ASC,
+      a.AppointmentTime ASC
+  `);
+
+  return result.recordset;
+};
+
 
 // =====================================================
 // CREATE APPOINTMENT
@@ -517,6 +557,7 @@ export {
   getAppointments,
   getAppointmentsByDate,
   getAppointmentById,
+  getSearchedAppointments,
   createAppointment,
   updateAppointment,
   deleteAppointment,
