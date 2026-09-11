@@ -3,7 +3,7 @@ import { NextSeo } from "next-seo";
 import ImageCarousel from '../components/ImageCarousel';
 import Product from "../components/Product"; // adjust path if needed
 import { useTranslation } from "react-i18next";
-import Dashboard from "./Dashboard";
+import Dashboard from "./dashboard";
 
 
 const Home = () => {
