@@ -1,0 +1,786 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+
+
+const PAYMENT_METHODS = [
+  "Cash",
+  "Visa",
+  "Bank Transfer",
+  "Instapay",
+  "Vodafone Cash",
+];
+
+const formatMoney = (value) => {
+  const number = Number(value || 0);
+
+  return number.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const formatDateTime = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const  SessionPayments = () => {
+  const router = useRouter();
+
+  // --------------------------------------------------
+  // Session information passed from sessionDue.js
+  // --------------------------------------------------
+
+  const [sessionID, setSessionID] = useState("");
+  const [patientID, setPatientID] = useState("");
+
+  const [servicesTotal, setServicesTotal] = useState(0);
+  const [servicesDiscount, setServicesDiscount] = useState(0);
+  const [servicesNet, setServicesNet] = useState(0);
+  const [totalPaid, setTotalPaid] = useState(0);
+  const [remaining, setRemaining] = useState(0);
+
+  // --------------------------------------------------
+  // Payments
+  // --------------------------------------------------
+
+  const [payments, setPayments] = useState([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+
+  // --------------------------------------------------
+  // Form
+  // --------------------------------------------------
+
+  const [amountPaid, setAmountPaid] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [notes, setNotes] = useState("");
+
+  const [editingPaymentID, setEditingPaymentID] = useState(null);
+
+  // --------------------------------------------------
+  // UI state
+  // --------------------------------------------------
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // --------------------------------------------------
+  // Read query parameters
+  // --------------------------------------------------
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const {
+      sessionID: querySessionID,
+      patientID: queryPatientID,
+      servicesTotal: queryServicesTotal,
+      servicesDiscount: queryServicesDiscount,
+      servicesNet: queryServicesNet,
+      totalPaid: queryTotalPaid,
+      remaining: queryRemaining,
+    } = router.query;
+
+    if (!querySessionID || !queryPatientID) {
+      setError("Session information is missing.");
+      setLoading(false);
+      return;
+    }
+
+    setSessionID(Number(querySessionID));
+    setPatientID(Number(queryPatientID));
+
+    setServicesTotal(Number(queryServicesTotal || 0));
+    setServicesDiscount(Number(queryServicesDiscount || 0));
+    setServicesNet(Number(queryServicesNet || 0));
+    setTotalPaid(Number(queryTotalPaid || 0));
+    setRemaining(Number(queryRemaining || 0));
+
+    loadPayments(Number(querySessionID));
+
+    setLoading(false);
+  }, [router.isReady, router.query]);
+
+  // --------------------------------------------------
+  // Load payments
+  // --------------------------------------------------
+
+  const loadPayments = async (currentSessionID = sessionID) => {
+    if (!currentSessionID) return;
+
+    try {
+      setLoadingPayments(true);
+      setError("");
+
+      const response = await fetch(
+        `/api/sessionPayments?sessionId=${encodeURIComponent(
+          currentSessionID
+        )}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to load payments."
+        );
+      }
+
+      setPayments(Array.isArray(data) ? data : []);
+
+      calculatePaymentTotal(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to load payments.");
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // Calculate total paid from payment records
+  // --------------------------------------------------
+
+  const calculatePaymentTotal = (paymentList) => {
+    const total = (paymentList || []).reduce(
+      (sum, payment) =>
+        sum + Number(payment.AmountPaid || 0),
+      0
+    );
+
+    setTotalPaid(total);
+
+    setRemaining(
+      Math.max(0, Number(servicesNet || 0) - total)
+    );
+  };
+
+  // --------------------------------------------------
+  // Reset form
+  // --------------------------------------------------
+
+  const resetForm = () => {
+    setAmountPaid("");
+    setPaymentMethod("Cash");
+    setNotes("");
+    setEditingPaymentID(null);
+  };
+
+  // --------------------------------------------------
+  // Register / Update payment
+  // --------------------------------------------------
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (!sessionID || !patientID) {
+      setError("Session information is missing.");
+      return;
+    }
+
+    const amount = Number(amountPaid);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Payment amount must be greater than zero.");
+      return;
+    }
+
+    if (!PAYMENT_METHODS.includes(paymentMethod)) {
+      setError("Please select a valid payment method.");
+      return;
+    }
+
+    // ------------------------------------------------
+    // UPDATE
+    // ------------------------------------------------
+
+    if (editingPaymentID) {
+      try {
+        setSaving(true);
+
+        const response = await fetch(
+          `/api/sessionPayments/${editingPaymentID}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              amountPaid: amount,
+              paymentMethod,
+              notes,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Failed to update payment."
+          );
+        }
+
+        setSuccess("Payment updated successfully.");
+
+        resetForm();
+
+        await loadPayments(sessionID);
+      } catch (err) {
+        console.error(err);
+        setError(
+          err.message || "Failed to update payment."
+        );
+      } finally {
+        setSaving(false);
+      }
+
+      return;
+    }
+
+    // ------------------------------------------------
+    // CREATE
+    // ------------------------------------------------
+
+    try {
+      setSaving(true);
+
+      /*
+       * UserID comes from userInfo.UserID.
+       *
+       * This assumes userInfo is available in the
+       * application context/local storage as it is
+       * elsewhere in ClinicPro.
+       */
+
+      const storedUserInfo = localStorage.getItem("userInfo");
+
+      if (!storedUserInfo) {
+        throw new Error("User information is not available.");
+      }
+
+      const userInfo = JSON.parse(storedUserInfo);
+
+      const userID = Number(userInfo?.UserID);
+
+      if (!Number.isInteger(userID) || userID <= 0) {
+        throw new Error("Valid UserID is not available.");
+      }
+
+      const response = await fetch(
+        "/api/sessionPayments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionID: Number(sessionID),
+            patientID: Number(patientID),
+            amountPaid: amount,
+            paymentMethod,
+            notes,
+            userID,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to register payment."
+        );
+      }
+
+      setSuccess("Payment registered successfully.");
+
+      resetForm();
+
+      await loadPayments(sessionID);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.message || "Failed to register payment."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // Edit payment
+  // --------------------------------------------------
+
+  const handleEdit = (payment) => {
+    setError("");
+    setSuccess("");
+
+    setEditingPaymentID(payment.SessionPaymentID);
+    setAmountPaid(payment.AmountPaid ?? "");
+    setPaymentMethod(
+      PAYMENT_METHODS.includes(payment.PaymentMethod)
+        ? payment.PaymentMethod
+        : "Cash"
+    );
+    setNotes(payment.Notes || "");
+
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth",
+    });
+  };
+
+  // --------------------------------------------------
+  // Cancel edit
+  // --------------------------------------------------
+
+  const handleCancelEdit = () => {
+    resetForm();
+    setError("");
+    setSuccess("");
+  };
+
+  // --------------------------------------------------
+  // Delete payment
+  // --------------------------------------------------
+
+  const handleDelete = async (paymentID) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this payment?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      setSuccess("");
+      setSaving(true);
+
+      const response = await fetch(
+        `/api/sessionPayments/${paymentID}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to delete payment."
+        );
+      }
+
+      setSuccess("Payment deleted successfully.");
+
+      if (editingPaymentID === paymentID) {
+        resetForm();
+      }
+
+      await loadPayments(sessionID);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.message || "Failed to delete payment."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --------------------------------------------------
+  // Back to Session Due
+  // --------------------------------------------------
+
+  const handleBack = () => {
+    router.push("/sessionDue");
+  };
+
+  // --------------------------------------------------
+  // Loading
+  // --------------------------------------------------
+
+  if (loading) {
+    return (
+      <div className="session-payments-page">
+        <div className="session-payments-loading">
+          Loading session payments...
+        </div>
+      </div>
+    );
+  }
+
+  // --------------------------------------------------
+  // Render
+  // --------------------------------------------------
+
+  return (
+    <div className="session-payments-page">
+
+      {/* ============================================
+          HEADER
+      ============================================ */}
+
+      <div className="session-payments-header">
+        <div>
+          <h1>Session Payments</h1>
+          <p>Payment records for the selected session.</p>
+        </div>
+
+        <button
+          type="button"
+          className="session-payments-back-button"
+          onClick={handleBack}
+        >
+          Back to Session Due
+        </button>
+      </div>
+
+      {/* ============================================
+          ERROR / SUCCESS
+      ============================================ */}
+
+      {error && (
+        <div className="session-payments-error">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="session-payments-success">
+          {success}
+        </div>
+      )}
+
+      {/* ============================================
+          SELECTED SESSION
+      ============================================ */}
+
+      <section className="session-payments-section">
+
+        <div className="session-payments-section-title">
+          Selected Session
+        </div>
+
+        <div className="session-payments-session-info">
+
+          <div className="session-payments-info-item">
+            <span>Session ID</span>
+            <strong>{sessionID}</strong>
+          </div>
+
+          <div className="session-payments-info-item">
+            <span>Patient ID</span>
+            <strong>{patientID}</strong>
+          </div>
+
+        </div>
+
+        <div className="session-payments-summary">
+
+          <div className="session-payments-summary-item">
+            <span>Services Total</span>
+            <strong>
+              {formatMoney(servicesTotal)}
+            </strong>
+          </div>
+
+          <div className="session-payments-summary-item">
+            <span>Services Discount</span>
+            <strong>
+              {formatMoney(servicesDiscount)}
+            </strong>
+          </div>
+
+          <div className="session-payments-summary-item">
+            <span>Services Net</span>
+            <strong>
+              {formatMoney(servicesNet)}
+            </strong>
+          </div>
+
+          <div className="session-payments-summary-item">
+            <span>Total Paid</span>
+            <strong>
+              {formatMoney(totalPaid)}
+            </strong>
+          </div>
+
+          <div className="session-payments-summary-item">
+            <span>Remaining</span>
+            <strong>
+              {formatMoney(remaining)}
+            </strong>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ============================================
+          PAYMENT HISTORY
+      ============================================ */}
+
+      <section className="session-payments-section">
+
+        <div className="session-payments-section-title">
+          Payment History
+        </div>
+
+        {loadingPayments ? (
+          <div className="session-payments-loading">
+            Loading payments...
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="session-payments-empty">
+            No payments have been registered for this session.
+          </div>
+        ) : (
+          <div className="session-payments-table-wrapper">
+
+            <table className="session-payments-table">
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Payment Date</th>
+                  <th>Amount Paid</th>
+                  <th>Payment Method</th>
+                  <th>Notes</th>
+                  <th>User</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {payments.map((payment) => (
+                  <tr key={payment.SessionPaymentID}>
+
+                    <td>
+                      {payment.SessionPaymentID}
+                    </td>
+
+                    <td>
+                      {formatDateTime(
+                        payment.PaymentDate
+                      )}
+                    </td>
+
+                    <td className="payment-amount">
+                      {formatMoney(
+                        payment.AmountPaid
+                      )}
+                    </td>
+
+                    <td>
+                      {payment.PaymentMethod || "-"}
+                    </td>
+
+                    <td>
+                      {payment.Notes || "-"}
+                    </td>
+
+                    <td>
+                      {payment.UserName || "-"}
+                    </td>
+
+                    <td>
+                      <div className="session-payment-actions">
+
+                        <button
+                          type="button"
+                          className="payment-edit-button"
+                          onClick={() =>
+                            handleEdit(payment)
+                          }
+                          disabled={saving}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="payment-delete-button"
+                          onClick={() =>
+                            handleDelete(
+                              payment.SessionPaymentID
+                            )
+                          }
+                          disabled={saving}
+                        >
+                          Delete
+                        </button>
+
+                      </div>
+                    </td>
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+        )}
+
+      </section>
+
+      {/* ============================================
+          PAYMENT FORM
+      ============================================ */}
+
+      <section className="session-payments-section">
+
+        <div className="session-payments-section-title">
+
+          {editingPaymentID
+            ? "Update Payment"
+            : "Register New Payment"}
+
+        </div>
+
+        <form
+          className="session-payment-form"
+          onSubmit={handleSubmit}
+        >
+
+          <div className="session-payment-form-row">
+
+            {/* Amount */}
+
+            <div className="session-payment-form-group">
+
+              <label htmlFor="amountPaid">
+                Amount Paid
+              </label>
+
+              <input
+                id="amountPaid"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amountPaid}
+                onChange={(event) =>
+                  setAmountPaid(event.target.value)
+                }
+                placeholder="Enter amount"
+                disabled={saving}
+                required
+              />
+
+            </div>
+
+            {/* Payment Method */}
+
+            <div className="session-payment-form-group">
+
+              <label htmlFor="paymentMethod">
+                Payment Method
+              </label>
+
+              <select
+                id="paymentMethod"
+                value={paymentMethod}
+                onChange={(event) =>
+                  setPaymentMethod(event.target.value)
+                }
+                disabled={saving}
+                required
+              >
+
+                {PAYMENT_METHODS.map((method) => (
+                  <option
+                    key={method}
+                    value={method}
+                  >
+                    {method}
+                  </option>
+                ))}
+
+              </select>
+
+            </div>
+
+          </div>
+
+          {/* Notes */}
+
+          <div className="session-payment-form-group">
+
+            <label htmlFor="paymentNotes">
+              Notes
+            </label>
+
+            <textarea
+              id="paymentNotes"
+              value={notes}
+              onChange={(event) =>
+                setNotes(event.target.value)
+              }
+              placeholder="Optional notes"
+              maxLength={500}
+              rows={4}
+              disabled={saving}
+            />
+
+          </div>
+
+          {/* Buttons */}
+
+          <div className="session-payment-form-actions">
+
+            <button
+              type="submit"
+              className="session-payment-save-button"
+              disabled={saving}
+            >
+              {saving
+                ? "Saving..."
+                : editingPaymentID
+                ? "Update Payment"
+                : "Register Payment"}
+            </button>
+
+            {editingPaymentID && (
+              <button
+                type="button"
+                className="session-payment-cancel-button"
+                onClick={handleCancelEdit}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+            )}
+
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+  );
+}
+
+export default SessionPayments;
