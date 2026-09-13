@@ -2071,7 +2071,7 @@ table.additional-info > tbody > tr > th {
 /* HEADER COMPONENT ---------------------------------------- */
 
 .headerContainerStyle  {
-    background-color: #F36B31;
+    background-color: blue;
     color: #fff;
     padding: 8px 16px;
     display: flex;

@@ -66,40 +66,37 @@ const Dashboard = () => {
     // =====================================================
 
     const loadDashboard = async () => {
-
         try {
-
             setLoading(true);
 
-            /*
-             * Dashboard API will be connected here.
-             *
-             * For now we use empty values so the dashboard
-             * can be displayed while we build the APIs.
-             */
+            const response = await fetch("/api/dashboard");
 
-            setDashboardData({
-                totalPatients: 0,
-                todayAppointments: 0,
-                pendingAppointments: 0,
-                completedToday: 0,
-                appointments: [],
-                recentPatients: [],
-            });
+            const data = await response.json();
 
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Failed to load dashboard data."
+                );
+            }
+
+            setDashboardData((previousData) => ({
+                ...previousData,
+
+                totalPatients: Number(data.totalPatients || 0),
+
+                todayAppointments: Number(data.todayAppointments || 0),
+
+                pendingAppointments: Number(data.pendingAppointments || 0),
+
+                completedToday: Number(data.completedToday || 0),
+            }));
         } catch (error) {
-
-            console.error(
-                "Error loading dashboard:",
-                error
-            );
+            console.error("Error loading dashboard:", error);
 
             toast.error(
-                "Unable to load dashboard"
+                error.message || "Unable to load dashboard"
             );
-
         } finally {
-
             setLoading(false);
         }
     };
