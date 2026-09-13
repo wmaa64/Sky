@@ -314,6 +314,113 @@
   cursor: not-allowed;
 }
 
+/* Patient Coupon Section ------------------------------- */
+/* ============================================
+   PATIENT COUPON
+============================================ */
+
+.session-payment-coupon-loading {
+  margin-top: 20px;
+  padding: 14px 18px;
+  border: 1px solid #d9dee3;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Valid coupon container */
+.session-payment-coupon-alert {
+  margin-top: 20px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  border: 1px solid #f0c36d;
+  border-left: 5px solid #f0ad4e;
+  border-radius: 8px;
+
+  background: #fff8e6;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Coupon information */
+.session-payment-coupon-information {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.session-payment-coupon-information strong {
+  margin-bottom: 3px;
+  color: #8a5a00;
+  font-size: 16px;
+}
+
+.session-payment-coupon-information span {
+  color: #555;
+  font-size: 14px;
+}
+
+.session-payment-coupon-information b {
+  color: #222;
+  font-weight: 600;
+}
+
+/* Use Coupon button */
+.session-payment-use-coupon-button {
+  flex-shrink: 0;
+
+  min-width: 130px;
+  padding: 10px 18px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #28a745;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.session-payment-use-coupon-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+.session-payment-use-coupon-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.session-payment-use-coupon-button:disabled {
+  background: #a5c9ad;
+  color: #f1f1f1;
+  cursor: not-allowed;
+}
+
+/* No coupon */
+.session-payment-no-coupon {
+  margin-top: 20px;
+  padding: 14px 18px;
+
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+
+  background: #f8f9fa;
+  color: #777;
+
+  font-size: 14px;
+  text-align: center;
+}
+
+
 
 /* =========================================================
    PAYMENT FORM
@@ -525,6 +632,21 @@
 
 }
 
+
+/* ============================================
+   PATIENT COUPON - RESPONSIVE
+============================================ */
+
+@media (max-width: 600px) {
+  .session-payment-coupon-alert {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .session-payment-use-coupon-button {
+    width: 100%;
+  }
+}
 
 /* =========================================================
    SMALL MOBILE

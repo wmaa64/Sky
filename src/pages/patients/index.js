@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// INITIAL FORM
+// INITIAL FORMS
 const emptyForm = {
   FullName: "",
   Phone: "",
@@ -10,6 +10,18 @@ const emptyForm = {
   NationalID: "",
 };
 
+const frmCouponEmpty = {
+  CouponID: null,
+  CouponNo: "",
+  PatientID: null,
+  Amount: "",
+  FromDate: "",
+  ToDate: "",
+  Status: "Valid",
+  Notes: "",
+};
+
+// PATIENTS PAGE
 const  Patients = ()=> {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -22,6 +34,12 @@ const  Patients = ()=> {
     const [editingPatient, setEditingPatient] = useState(null);
     const [formData, setFormData] = useState(emptyForm);
     const [saving, setSaving] = useState(false);
+
+    // COUPON / MODAL
+    const [showCouponForm, setShowCouponForm] = useState(false);
+    const [couponPatient, setCouponPatient] = useState(null);
+    const [frmCoupon, setFrmCoupon] = useState(frmCouponEmpty);
+    const [couponSaving, setCouponSaving] = useState(false);
 
     const searchPatients = async () => {
         const searchValue = search.trim();
@@ -63,6 +81,95 @@ const  Patients = ()=> {
         setFormData({ ...emptyForm, });
         setShowForm(true);
     };
+
+    
+    // OPEN COUPON FORM
+    const handlePatientCoupon = (patient) => {
+    setCouponPatient(patient);
+
+    setFrmCoupon({...frmCouponEmpty,  PatientID: patient.PatientID,  Status: "Valid", });
+
+    setShowCouponForm(true);
+    };
+
+    // CLOSE COUPON FORM
+    const handleCloseCouponForm = () => {
+        if (couponSaving) { return; }
+
+        setShowCouponForm(false);
+        setCouponPatient(null);
+        setFrmCoupon({...frmCouponEmpty, });
+    };
+
+    // COUPON FORM INPUT
+    const handleCouponChange = (event) => {
+        const { name, value } = event.target;
+
+        setFrmCoupon((current) => ({...current, [name]: value, }));
+    };
+
+    // SAVE COUPON
+    const handleCouponSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!frmCoupon.PatientID) {alert("Patient information is missing.");
+            return;
+        }
+
+        if (![100, 200, 300, 400, 500, 600, 700, 800, 900, 1000].includes(Number(frmCoupon.Amount))) {
+            alert("Please select a coupon amount.");
+            return;
+        }
+
+        if (!frmCoupon.FromDate) {alert("Please select the From Date.");
+            return;
+        }
+
+        if (!frmCoupon.ToDate) {alert("Please select the To Date.");
+            return;
+        }
+
+        if (frmCoupon.FromDate > frmCoupon.ToDate) {alert("To Date cannot be earlier than From Date.");
+            return;
+        }
+
+        try {
+            setCouponSaving(true);
+
+            const response = await fetch("/api/coupons", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                    patientID: Number(frmCoupon.PatientID),
+                    amount: Number(frmCoupon.Amount),
+                    fromDate: frmCoupon.FromDate,
+                    toDate: frmCoupon.ToDate,
+                    notes: frmCoupon.Notes || "",
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to create coupon." );
+            }
+
+            alert(`Coupon ${data.CouponNo} created successfully.`    );
+
+            handleCloseCouponForm();
+
+        } catch (error) {
+            console.error("Create coupon error:", error);
+
+            alert(error.message || "Unable to create coupon.");
+
+        } finally {
+            setCouponSaving(false);
+        }
+    };
+
 
     // OPEN EDIT PATIENT FORM
     const handleEditPatient = (patient) => {
@@ -363,6 +470,14 @@ const  Patients = ()=> {
                                         <div className="subject-actions">
                                             <button
                                                 type="button"
+                                                className="subject-coupon-button"
+                                                onClick={() => handlePatientCoupon(patient)}
+                                            >
+                                                Coupon
+                                            </button>
+
+                                            <button
+                                                type="button"
                                                 className="subject-edit-button"
                                                 onClick={() => handleEditPatient(patient)}
                                             >
@@ -509,6 +624,184 @@ const  Patients = ()=> {
 
           </div>
 
+        )}
+
+        {/* ==================================================
+            COUPON MODAL
+        ================================================== */}
+
+        {showCouponForm && (
+        <div
+            className="subject-modal-overlay"
+            onMouseDown={(event) => {
+                if (event.target === event.currentTarget) {
+                    handleCloseCouponForm();
+                }
+            }}
+        >
+            <div className="subject-modal">
+
+            {/* ==========================================
+                MODAL HEADER
+            ========================================== */}
+
+            <div className="subject-modal-header">
+
+                <div>
+                    <h2>Add Coupon</h2>
+                    <p>Create a coupon for the selected patient</p>
+                </div>
+
+                <button   type="button"    className="patients-close-button"
+                    onClick={handleCloseCouponForm}
+                    disabled={couponSaving}
+                >
+                ×
+                </button>
+            </div>
+
+            {/* ==========================================
+                PATIENT INFORMATION
+            ========================================== */}
+
+            {couponPatient && (
+                <div className="coupon-patient-info">
+                    <div>
+                        <span>Patient</span>
+                        <strong>{couponPatient.FullName || "-"}</strong>
+                    </div>
+
+                    <div>
+                        <span>File No.</span>
+                        <strong>{couponPatient.FileNo || "-"}</strong>
+                    </div>
+
+                    <div>
+                        <span>Patient ID</span>
+                        <strong>{couponPatient.PatientID}</strong>
+                    </div>
+                </div>
+            )}
+
+
+            {/* ==========================================
+                COUPON FORM
+            ========================================== */}
+
+            <form   className="subject-form"    onSubmit={handleCouponSubmit} >
+
+                <div className="subject-form-grid">
+
+                {/* --------------------------------------
+                    AMOUNT
+                -------------------------------------- */}
+
+                <div className="subject-form-group">
+
+                    <label>Coupon Amount *</label>
+
+                    <select   name="Amount"   value={frmCoupon.Amount}
+                        onChange={handleCouponChange}   required    disabled={couponSaving}
+                    >
+
+                        <option value="">Select Amount</option>
+
+                        {Array.from({ length: 10 }, (_, index) => {
+                            const amount = (index + 1) * 100;
+
+                            return (
+                                <option key={amount} value={amount}>
+                                    {amount}
+                                </option>
+                            );
+                        })}
+
+                    </select>
+
+                </div>
+
+
+                {/* --------------------------------------
+                    STATUS
+                -------------------------------------- */}
+
+                <div className="subject-form-group">
+                    <label>Status</label>
+                    <input   type="text"    value="Valid"      disabled     />
+                </div>
+
+                {/* --------------------------------------
+                    FROM DATE
+                -------------------------------------- */}
+
+                <div className="subject-form-group">
+
+                    <label>From Date *</label>
+                    <input  type="date" name="FromDate"  value={frmCoupon.FromDate}
+                        onChange={handleCouponChange}
+                        required  disabled={couponSaving}
+                    />
+
+                </div>
+
+
+                {/* --------------------------------------
+                    TO DATE
+                -------------------------------------- */}
+
+                <div className="subject-form-group">
+
+                    <label>To Date *</label>
+                    <input   type="date"   name="ToDate"    value={frmCoupon.ToDate}
+                        onChange={handleCouponChange}
+                        required    disabled={couponSaving}
+                    />
+
+                </div>
+
+
+                {/* --------------------------------------
+                    NOTES
+                -------------------------------------- */}
+
+                <div className="subject-form-group patients-full-width">
+
+                    <label>Notes</label>
+                    <textarea   name="Notes"   value={frmCoupon.Notes}
+                        onChange={handleCouponChange}     placeholder="Optional notes"
+                        rows="4"     maxLength="500"   disabled={couponSaving}
+                    />
+
+                </div>
+
+                </div>
+
+
+                {/* ========================================
+                    FORM BUTTONS
+                ======================================== */}
+
+                <div className="subject-form-actions">
+
+                    <button   type="button"     className="subject-cancel-button"
+                        onClick={handleCloseCouponForm}    disabled={couponSaving}
+                    >
+                        Cancel
+                    </button>
+
+                    <button   type="submit"    className="subject-save-button"
+                        disabled={couponSaving}
+                    >
+                        {couponSaving  ? "Saving..."  : "Save Coupon"}
+                    </button>
+
+                </div>
+
+            </form>
+
+            </div>
+
+        </div>
         )}
 
       </div>

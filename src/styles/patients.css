@@ -237,9 +237,11 @@
           gap: 7px;
         }
 
+        
 
         .subject-edit-button,
-        .subject-delete-button {
+        .subject-delete-button,
+        .subject-coupon-button {
           padding: 7px 12px;
           border: none;
           border-radius: 5px;
@@ -248,6 +250,15 @@
           cursor: pointer;
         }
 
+
+        .subject-coupon-button {
+          background: #fef2f2;
+          color: orange;
+        }
+
+        .subject-coupon-button:hover {
+          background: #dbeafe;
+        }
 
         .subject-edit-button {
           background: #eff6ff;
@@ -478,6 +489,106 @@
         }
 
 
+/* =========================================================
+   COUPON BUTTON
+========================================================= */
+
+.patients-coupon-button {
+  border: none;
+  border-radius: 5px;
+  padding: 7px 11px;
+  background: #f39c12;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.patients-coupon-button:hover {
+  background: #d68910;
+}
+
+.patients-coupon-button:active {
+  transform: translateY(1px);
+}
+
+
+/* =========================================================
+   COUPON PATIENT INFORMATION
+========================================================= */
+
+.coupon-patient-info {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin: 10px ;
+  padding: 15px;
+  background: #f8f9fb;
+  border: 1px solid #e1e5ea;
+  border-radius: 6px;
+}
+
+.coupon-patient-info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.coupon-patient-info span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.coupon-patient-info strong {
+  font-size: 14px;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+
+/* =========================================================
+   COUPON FORM
+========================================================= */
+
+.coupon-patient-info + .patients-form {
+  margin-top: 0;
+}
+
+
+/* =========================================================
+   FULL-WIDTH COUPON FIELD
+========================================================= */
+
+.patients-full-width {
+  grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   COUPON MODAL RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .coupon-patient-info {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .patients-full-width {
+    grid-column: auto;
+  }
+
+}
+
+
+
+
         /* ==================================================
            MOBILE
         ================================================== */
@@ -554,3 +665,15 @@
 
         }
 
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 450px) {
+
+  .patients-coupon-button {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+
+}

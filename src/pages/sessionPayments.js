@@ -8,6 +8,7 @@ const PAYMENT_METHODS = [
   "Bank Transfer",
   "Instapay",
   "Vodafone Cash",
+  "Coupon",
 ];
 
 const formatMoney = (value) => {
@@ -37,6 +38,7 @@ const formatDateTime = (value) => {
   });
 };
 
+// SessionPayments Page Component
 const  SessionPayments = () => {
   const router = useRouter();
 
@@ -79,6 +81,14 @@ const  SessionPayments = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+    // --------------------------------------------------
+  // Patient coupon
+  // --------------------------------------------------
+
+  const [patientCoupon, setPatientCoupon] = useState(null);
+  const [loadingCoupon, setLoadingCoupon] = useState(false);
+  const [usingCoupon, setUsingCoupon] = useState(false);
+
   // --------------------------------------------------
   // Read query parameters
   // --------------------------------------------------
@@ -112,10 +122,42 @@ const  SessionPayments = () => {
     setRemaining(Number(queryRemaining || 0));
 
     loadPayments(Number(querySessionID));
+    loadPatientCoupon(Number(queryPatientID));
 
     setLoading(false);
   }, [router.isReady, router.query]);
 
+    // --------------------------------------------------
+  // Load patient's top valid coupon
+  // --------------------------------------------------
+
+  const loadPatientCoupon = async (currentPatientID = patientID) => {
+    if (!currentPatientID) return;
+
+    try {
+      setLoadingCoupon(true);
+      setPatientCoupon(null);
+
+      const response = await fetch(`/api/coupons?patientID=${encodeURIComponent(currentPatientID)}&status=Valid` );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to load patient coupon."
+        );
+      }
+
+      setPatientCoupon(data || null);
+    } catch (err) {
+      console.error("Load patient coupon error:", err);
+      setPatientCoupon(null);
+    } finally {
+      setLoadingCoupon(false);
+    }
+  };
+
+  
   // --------------------------------------------------
   // Load payments
   // --------------------------------------------------
@@ -182,6 +224,94 @@ const  SessionPayments = () => {
   };
 
   // --------------------------------------------------
+  // Use patient coupon as payment
+  // --------------------------------------------------
+
+  const handleUseCoupon = async () => {
+    if (!patientCoupon) {
+      setError("No valid coupon is available for this patient.");
+      return;
+    }
+
+    if (!sessionID || !patientID) {
+      setError("Session information is missing.");
+      return;
+    }
+
+    const couponAmount = Number(patientCoupon.Amount);
+
+    if (!Number.isFinite(couponAmount) || couponAmount <= 0) {
+      setError("The coupon amount is invalid.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Use coupon ${patientCoupon.CouponNo} for ${formatMoney(couponAmount)} 
+        as payment for this session?`  );
+
+    if (!confirmed) return;
+
+    try {
+      setUsingCoupon(true);
+      setError("");
+      setSuccess("");
+
+      const storedUserInfo = localStorage.getItem("userInfo");
+
+      if (!storedUserInfo) {
+        throw new Error("User information is not available.");
+      }
+
+      const userInfo = JSON.parse(storedUserInfo);
+      const userID = Number(userInfo?.UserID);
+
+      if (!Number.isInteger(userID) || userID <= 0) {
+        throw new Error("Valid UserID is not available.");
+      }
+
+      const response = await fetch("/api/sessionPayments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionID: Number(sessionID),
+          patientID: Number(patientID),
+          amountPaid: couponAmount,
+          paymentMethod: "Coupon",
+          notes: `Coupon ${patientCoupon.CouponNo}`,
+          userID,
+          couponID: patientCoupon.CouponID,
+          couponNo: patientCoupon.CouponNo,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to use coupon."
+        );
+      }
+
+      setSuccess(
+        `Coupon ${patientCoupon.CouponNo} used successfully.`
+      );
+
+      setPatientCoupon(null);
+
+      await loadPayments(sessionID);
+      await loadPatientCoupon(patientID);
+    } catch (err) {
+      console.error("Use coupon error:", err);
+      setError(err.message || "Failed to use coupon.");
+    } finally {
+      setUsingCoupon(false);
+    }
+  };
+
+
+
+  // --------------------------------------------------
   // Register / Update payment
   // --------------------------------------------------
 
@@ -205,6 +335,11 @@ const  SessionPayments = () => {
 
     if (!PAYMENT_METHODS.includes(paymentMethod)) {
       setError("Please select a valid payment method.");
+      return;
+    }
+
+    if (paymentMethod === "Coupon") {
+      setError("Please use the Use Coupon button to register a coupon payment.");
       return;
     }
 
@@ -534,6 +669,45 @@ const  SessionPayments = () => {
 
         </div>
 
+        {/* ============================================
+            PATIENT COUPON
+        ============================================ */}
+
+        {loadingCoupon ? (
+          <div className="session-payment-coupon-loading">
+            Checking patient coupons...
+          </div>
+        ) : patientCoupon ? (
+          <div className="session-payment-coupon-alert">
+            <div className="session-payment-coupon-information">
+              <strong>Patient has a valid coupon</strong>
+
+              <span>
+                Coupon No.:{" "}
+                <b>{patientCoupon.CouponNo}</b>
+              </span>
+
+              <span>
+                Coupon Value:{" "}
+                <b>{formatMoney(patientCoupon.Amount)}</b>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="session-payment-use-coupon-button"
+              onClick={handleUseCoupon}
+              disabled={saving || usingCoupon || loadingPayments}
+            >
+              {usingCoupon ? "Using Coupon..." : "Use Coupon"}
+            </button>
+          </div>
+        ) : (
+          <div className="session-payment-no-coupon">
+            No valid coupon is available for this patient.
+          </div>
+        )}
+
       </section>
 
       {/* ============================================
@@ -565,6 +739,7 @@ const  SessionPayments = () => {
                   <th>Payment Date</th>
                   <th>Amount Paid</th>
                   <th>Payment Method</th>
+                  <th>Coupon No.</th>
                   <th>Notes</th>
                   <th>User</th>
                   <th>Actions</th>
@@ -594,6 +769,10 @@ const  SessionPayments = () => {
 
                     <td>
                       {payment.PaymentMethod || "-"}
+                    </td>
+                    
+                    <td>
+                      {payment.CouponNo || "-"}
                     </td>
 
                     <td>

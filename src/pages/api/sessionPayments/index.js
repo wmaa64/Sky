@@ -31,6 +31,8 @@ export default async function handler(req, res) {
         paymentMethod,
         notes,
         userID,
+        couponID,
+        couponNo
       } = req.body;
 
       const parsedSessionID = Number(sessionID);
@@ -82,6 +84,21 @@ export default async function handler(req, res) {
         });
       }
 
+      const PAYMENT_METHODS = [
+        "Cash",
+        "Visa",
+        "Bank Transfer",
+        "Instapay",
+        "Vodafone Cash",
+        "Coupon",
+      ];
+
+      if (!PAYMENT_METHODS.includes(paymentMethod)) {
+        return res.status(400).json({
+          message: "Invalid payment method.",
+        });
+      }
+
       const payment = await createSessionPayment({
         sessionID: parsedSessionID,
         patientID: parsedPatientID,
@@ -89,6 +106,8 @@ export default async function handler(req, res) {
         paymentMethod,
         notes,
         userID: parsedUserID,
+        couponID,
+        couponNo
       });
 
       return res.status(201).json(payment);
