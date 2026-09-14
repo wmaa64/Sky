@@ -1,6 +1,10 @@
-import {    getDashboardStatistics,} from "../../../controllers/dashboardController";
+import {
+    getDashboardStatistics,
+    getTodayAppointments,
+} from "../../../controllers/dashboardController";
 
 export default async function handler(req, res) {
+
     if (req.method !== "GET") {
         res.setHeader("Allow", ["GET"]);
 
@@ -10,9 +14,9 @@ export default async function handler(req, res) {
     }
 
     try {
-        const statistics = await getDashboardStatistics();
+        const [statistics,  appointments, ] = await Promise.all([getDashboardStatistics(), getTodayAppointments(), ]);
 
-        return res.status(200).json(statistics);
+        return res.status(200).json({...statistics,  appointments,});
     } catch (error) {
         console.error("Dashboard API error:", error);
 

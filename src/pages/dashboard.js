@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
-
+import { useTranslation } from "react-i18next";
 import { useStateContext } from "../../context/StateContext";
 
 
 const Dashboard = () => {
 
+    const { i18n } = useTranslation();
     const router = useRouter();
 
     const {
@@ -27,6 +28,7 @@ const Dashboard = () => {
         recentPatients: [],
     });
 
+    const isRTL = i18n.language === "ar"; // true if Arabic
 
     // =====================================================
     // CHECK LOGIN
@@ -79,17 +81,14 @@ const Dashboard = () => {
                 );
             }
 
-            setDashboardData((previousData) => ({
-                ...previousData,
-
+            setDashboardData({
                 totalPatients: Number(data.totalPatients || 0),
-
                 todayAppointments: Number(data.todayAppointments || 0),
-
                 pendingAppointments: Number(data.pendingAppointments || 0),
-
                 completedToday: Number(data.completedToday || 0),
-            }));
+                appointments: Array.isArray(data.appointments) ? data.appointments : [],
+                recentPatients: [],
+            });
         } catch (error) {
             console.error("Error loading dashboard:", error);
 
@@ -100,7 +99,6 @@ const Dashboard = () => {
             setLoading(false);
         }
     };
-
 
     // =====================================================
     // WAIT FOR USER
@@ -117,7 +115,7 @@ const Dashboard = () => {
 
 
     // =====================================================
-    // DASHBOARD
+    // DASHBOARD PAGE RENDER
     // =====================================================
 
     return (
@@ -132,18 +130,8 @@ const Dashboard = () => {
             <div className="dashboard-header">
 
                 <div>
-
-                    <h1>
-                        Dashboard
-                    </h1>
-
-                    <p>
-                        Welcome back,{" "}
-                        <strong>
-                            {userInfo.FullName}
-                        </strong>
-                    </p>
-
+                    <h1>{isRTL ? "لوحة التحكم" : "Dashboard"}</h1>
+                    <p>{isRTL ? "مرحبا بعودتك," : "Welcome back,"}{" "}<strong>{userInfo.FullName}</strong></p>
                 </div>
 
 
@@ -156,9 +144,8 @@ const Dashboard = () => {
                         </span>
 
                         <span className="dashboard-user-role">
-                            {userInfo.RoleID === 2
-                                ? "Doctor"
-                                : "Clinic Staff"
+                            {userInfo.RoleID === 2 ? isRTL ? "طبيب" : "Doctor"
+                                : isRTL ? "طاقم العيادة" : "Clinic Staff"
                             }
                         </span>
 
@@ -175,7 +162,7 @@ const Dashboard = () => {
 
                         }}
                     >
-                        Logout
+                        {isRTL ? "تسجيل الخروج" : "Logout"}
                     </button>
 
                 </div>
@@ -199,7 +186,7 @@ const Dashboard = () => {
                     <div>
 
                         <span className="stat-title">
-                            Total Patients
+                            {isRTL ? "إجمالي المرضى" : "Total Patients"}
                         </span>
 
                         <strong className="stat-value">
@@ -220,7 +207,7 @@ const Dashboard = () => {
                     <div>
 
                         <span className="stat-title">
-                            Today &apos; s Appointments
+                            {isRTL ? " المواعيد اليوم" : "Today &apos; s Appointments"}
                         </span>
 
                         <strong className="stat-value">
@@ -241,7 +228,7 @@ const Dashboard = () => {
                     <div>
 
                         <span className="stat-title">
-                            Pending
+                            {isRTL ? "قيد الانتظار" : "Pending"}
                         </span>
 
                         <strong className="stat-value">
@@ -260,21 +247,13 @@ const Dashboard = () => {
                     </div>
 
                     <div>
-
-                        <span className="stat-title">
-                            Completed Today
-                        </span>
-
-                        <strong className="stat-value">
-                            {dashboardData.completedToday}
-                        </strong>
-
+                        <span className="stat-title">{isRTL ? "المواعيد المكتملة اليوم" : "Completed Today"}</span>
+                        <strong className="stat-value">{dashboardData.completedToday}</strong>
                     </div>
 
                 </div>
 
             </div>
-
 
             {/* =================================================
                 QUICK ACTIONS
@@ -283,99 +262,43 @@ const Dashboard = () => {
             <div className="dashboard-section">
 
                 <div className="dashboard-section-title">
-
-                    <h2>
-                        Quick Actions
-                    </h2>
-
+                    <h2>{isRTL ? "الإجراءات السريعة" : "Quick Actions"}</h2>
                 </div>
 
 
                 <div className="quick-actions">
 
+                    <button  onClick={() =>router.push("/appointments")}  className="quick-action">
+                        <span className="quick-action-icon">📅</span>
+                        <span>{isRTL ? "موعد جديد" : "New Appointment"}</span>
+                    </button>
 
-                    <button
-                        onClick={() =>
-                            router.push("/appointments")
-                        }
-                        className="quick-action"
-                    >
-
-                        <span className="quick-action-icon">
-                            📅
-                        </span>
-
-                        <span>
-                            New Appointment
-                        </span>
-
+                    <button  onClick={() =>router.push("/patients")}  className="quick-action">
+                        <span className="quick-action-icon">👤</span>
+                        <span>{isRTL ? "المرضى" : "Patients"}</span>
                     </button>
 
 
-                    <button
-                        onClick={() =>
-                            router.push("/patients")
-                        }
-                        className="quick-action"
-                    >
-
-                        <span className="quick-action-icon">
-                            👤
-                        </span>
-
-                        <span>
-                            Patients
-                        </span>
-
+                    <button  onClick={() =>router.push("/patients")}  className="quick-action">
+                        <span className="quick-action-icon">➕</span>
+                        <span>{isRTL ? "إضافة مريض" : "Add Patient"}</span>
                     </button>
 
 
-                    <button
-                        onClick={() =>
-                            router.push("/patients")
-                        }
-                        className="quick-action"
-                    >
-
-                        <span className="quick-action-icon">
-                            ➕
-                        </span>
-
-                        <span>
-                            Add Patient
-                        </span>
-
-                    </button>
-
-
-                    <button
-                        onClick={() =>
-                            router.push("/appointments")
-                        }
-                        className="quick-action"
-                    >
-
-                        <span className="quick-action-icon">
-                            🗓
-                        </span>
-
-                        <span>
-                            Calendar
-                        </span>
-
+                    <button  onClick={() =>router.push("/appointments")}  className="quick-action">
+                        <span className="quick-action-icon">🗓</span>
+                        <span>{isRTL ? "التقويم" : "Calendar"}</span>
                     </button>
 
                 </div>
 
             </div>
 
-
             {/* =================================================
                 MAIN CONTENT
                ================================================= */}
 
             <div className="dashboard-columns">
-
 
                 {/* =================================================
                     TODAY'S APPOINTMENTS
@@ -384,19 +307,8 @@ const Dashboard = () => {
                 <div className="dashboard-panel">
 
                     <div className="panel-header">
-
-                        <h2>
-                            Today &apos; s Appointments
-                        </h2>
-
-                        <button
-                            onClick={() =>
-                                router.push("/appointments")
-                            }
-                        >
-                            View All
-                        </button>
-
+                        <h2>{isRTL ? " المواعيد اليوم" : "Today &apos; s Appointments"}</h2>
+                        <button  onClick={() => router.push("/appointments")}>{isRTL ? "عرض الكل" : "View All"}</button>
                     </div>
 
 
@@ -414,10 +326,7 @@ const Dashboard = () => {
                                 📅
                             </div>
 
-                            <p>
-                                No appointments today
-                            </p>
-
+                            <p>{isRTL ? "لا توجد مواعيد اليوم" : "No appointments today"}</p>
                         </div>
 
                     ) : (
@@ -427,36 +336,20 @@ const Dashboard = () => {
                             {dashboardData.appointments.map(
                                 (appointment, index) => (
 
-                                    <div
-                                        key={
-                                            appointment.AppointmentID ||
-                                            index
-                                        }
-                                        className="dashboard-appointment"
-                                    >
+                                    <div key={appointment.AppointmentID ||  index } className="dashboard-appointment">
 
                                         <div className="appointment-time">
                                             {appointment.Time}
                                         </div>
 
                                         <div className="appointment-info">
-
-                                            <strong>
-                                                {appointment.PatientName}
-                                            </strong>
-
-                                            <span>
-                                                {appointment.DoctorName}
-                                            </span>
-
+                                            <strong>{appointment.PatientName}</strong>
+                                            <span>{appointment.DoctorName}</span>
                                         </div>
 
                                         <div
-                                            className={
-                                                `appointment-status ` +
-                                                `status-${String(
-                                                    appointment.Status || ""
-                                                ).toLowerCase()}`
+                                            className={`appointment-status ` + 
+                                                `status-${String(appointment.Status || "").toLowerCase()}`
                                             }
                                         >
                                             {appointment.Status}
@@ -481,17 +374,9 @@ const Dashboard = () => {
                 <div className="dashboard-panel">
 
                     <div className="panel-header">
-
-                        <h2>
-                            Recent Patients
-                        </h2>
-
-                        <button
-                            onClick={() =>
-                                router.push("/patients")
-                            }
-                        >
-                            View All
+                        <h2>{isRTL ? "المرضى الجدد" : "Recent Patients"}</h2>
+                        <button  onClick={() => router.push("/patients")}>
+                            {isRTL ? "عرض الكل" : "View All"}
                         </button>
 
                     </div>
@@ -504,10 +389,7 @@ const Dashboard = () => {
                             <div className="empty-icon">
                                 👥
                             </div>
-
-                            <p>
-                                No recent patients
-                            </p>
+                            <p>{isRTL ? "لا توجد مرضى جدد" : "No recent patients"}</p>
 
                         </div>
 
@@ -527,22 +409,12 @@ const Dashboard = () => {
                                     >
 
                                         <div className="patient-avatar">
-                                            {patient.FullName
-                                                ?.charAt(0)
-                                                ?.toUpperCase()
-                                            }
+                                            {patient.FullName ?.charAt(0) ?.toUpperCase()}
                                         </div>
 
                                         <div className="patient-info">
-
-                                            <strong>
-                                                {patient.FullName}
-                                            </strong>
-
-                                            <span>
-                                                {patient.Phone}
-                                            </span>
-
+                                            <strong>{patient.FullName}</strong>
+                                            <span>{patient.Phone}</span>
                                         </div>
 
                                     </div>
