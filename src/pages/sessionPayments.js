@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
+import { useTranslation } from "react-i18next";
 
 const PAYMENT_METHODS = [
   "Cash",
@@ -40,6 +40,9 @@ const formatDateTime = (value) => {
 
 // SessionPayments Page Component
 const  SessionPayments = () => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   const router = useRouter();
 
   // --------------------------------------------------
@@ -558,7 +561,7 @@ const  SessionPayments = () => {
     return (
       <div className="session-payments-page">
         <div className="session-payments-loading">
-          Loading session payments...
+          {isRTL ? "جارٍ تحميل معلومات الدفع..." : "Loading session payments..."}
         </div>
       </div>
     );
@@ -577,8 +580,8 @@ const  SessionPayments = () => {
 
       <div className="session-payments-header">
         <div>
-          <h1>Session Payments</h1>
-          <p>Payment records for the selected session.</p>
+          <h1>{isRTL ? "مدفوعات الجلسة" : "Session Payments"}</h1>
+          <p>{isRTL ? "سجلات الدفع للجلسة المحددة." : "Payment records for the selected session."}</p>
         </div>
 
         <button
@@ -586,7 +589,7 @@ const  SessionPayments = () => {
           className="session-payments-back-button"
           onClick={handleBack}
         >
-          Back to Session Due
+          {isRTL ? "العودة إلى مستحقات الجلسة" : "Back to Session Due"}
         </button>
       </div>
 
@@ -613,18 +616,18 @@ const  SessionPayments = () => {
       <section className="session-payments-section">
 
         <div className="session-payments-section-title">
-          Selected Session
+          {isRTL ? "الجلسة المحددة" : "Selected Session"}
         </div>
 
         <div className="session-payments-session-info">
 
           <div className="session-payments-info-item">
-            <span>Session ID</span>
+            <span>{isRTL ? "معرف الجلسة" : "Session ID"}</span>
             <strong>{sessionID}</strong>
           </div>
 
           <div className="session-payments-info-item">
-            <span>Patient ID</span>
+            <span>{isRTL ? "معرف المريض" : "Patient ID"}</span>
             <strong>{patientID}</strong>
           </div>
 
@@ -633,35 +636,35 @@ const  SessionPayments = () => {
         <div className="session-payments-summary">
 
           <div className="session-payments-summary-item">
-            <span>Services Total</span>
+            <span>{isRTL ? "إجمالي الخدمات" : "Services Total"}</span>
             <strong>
               {formatMoney(servicesTotal)}
             </strong>
           </div>
 
           <div className="session-payments-summary-item">
-            <span>Services Discount</span>
+            <span>{isRTL ? "خصم الخدمات" : "Services Discount"}</span>
             <strong>
               {formatMoney(servicesDiscount)}
             </strong>
           </div>
 
           <div className="session-payments-summary-item">
-            <span>Services Net</span>
+            <span>{isRTL ? "صافى الخدمات" : "Services Net"}</span>
             <strong>
               {formatMoney(servicesNet)}
             </strong>
           </div>
 
           <div className="session-payments-summary-item">
-            <span>Total Paid</span>
+            <span>{isRTL ? "إجمالي المدفوع" : "Total Paid"}</span>
             <strong>
               {formatMoney(totalPaid)}
             </strong>
           </div>
 
           <div className="session-payments-summary-item">
-            <span>Remaining</span>
+            <span>{isRTL ? "المتبقي" : "Remaining"}</span>
             <strong>
               {formatMoney(remaining)}
             </strong>
@@ -675,20 +678,20 @@ const  SessionPayments = () => {
 
         {loadingCoupon ? (
           <div className="session-payment-coupon-loading">
-            Checking patient coupons...
+            {isRTL ? "جارٍ التحقق من قسائم المرضى..." : "Checking patient coupons..."}
           </div>
         ) : patientCoupon ? (
           <div className="session-payment-coupon-alert">
             <div className="session-payment-coupon-information">
-              <strong>Patient has a valid coupon</strong>
+              <strong>{isRTL ? "المريض لديه قسيمة صالحة" : "Patient has a valid coupon"}</strong>
 
               <span>
-                Coupon No.:{" "}
+                {isRTL ? "رقم القسيمة:" : "Coupon No.:"} {" "}
                 <b>{patientCoupon.CouponNo}</b>
               </span>
 
               <span>
-                Coupon Value:{" "}
+                {isRTL ? "قيمة القسيمة:" : "Coupon Value:"} {" "}
                 <b>{formatMoney(patientCoupon.Amount)}</b>
               </span>
             </div>
@@ -699,12 +702,13 @@ const  SessionPayments = () => {
               onClick={handleUseCoupon}
               disabled={saving || usingCoupon || loadingPayments}
             >
-              {usingCoupon ? "Using Coupon..." : "Use Coupon"}
+              {usingCoupon ? (isRTL ? "جارٍ استخدام القسيمة..." : "Using Coupon...") : 
+                             (isRTL ? "استخدام القسيمة" : "Use Coupon")}
             </button>
           </div>
         ) : (
           <div className="session-payment-no-coupon">
-            No valid coupon is available for this patient.
+            {isRTL ? "لا توجد قسيمة صالحة متاحة لهذا المريض." : "No valid coupon is available for this patient."}
           </div>
         )}
 
@@ -717,16 +721,16 @@ const  SessionPayments = () => {
       <section className="session-payments-section">
 
         <div className="session-payments-section-title">
-          Payment History
+          {isRTL ? "سجل الدفع" : "Payment History"}
         </div>
 
         {loadingPayments ? (
           <div className="session-payments-loading">
-            Loading payments...
+            {isRTL ? "جارٍ تحميل المدفوعات..." : "Loading payments..."}
           </div>
         ) : payments.length === 0 ? (
           <div className="session-payments-empty">
-            No payments have been registered for this session.
+            {isRTL ? "لا توجد مدفوعات مسجلة لهذه الجلسة." : "No payments have been registered for this session."}
           </div>
         ) : (
           <div className="session-payments-table-wrapper">
@@ -735,14 +739,14 @@ const  SessionPayments = () => {
 
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Payment Date</th>
-                  <th>Amount Paid</th>
-                  <th>Payment Method</th>
-                  <th>Coupon No.</th>
-                  <th>Notes</th>
-                  <th>User</th>
-                  <th>Actions</th>
+                  <th>{isRTL ? "المعرف" : "ID"}</th>
+                  <th>{isRTL ? "تاريخ الدفع" : "Payment Date"}</th>
+                  <th>{isRTL ? "المبلغ المدفوع" : "Amount Paid"}</th>
+                  <th>{isRTL ? "طريقة الدفع" : "Payment Method"}</th>
+                  <th>{isRTL ? "رقم القسيمة" : "Coupon No."}</th>
+                  <th>{isRTL ? "ملاحظات" : "Notes"}</th>
+                  <th>{isRTL ? "المستخدم" : "User"}</th>
+                  <th>{isRTL ? "الإجراءات" : "Actions"}</th>
                 </tr>
               </thead>
 
@@ -794,7 +798,7 @@ const  SessionPayments = () => {
                           }
                           disabled={saving}
                         >
-                          Edit
+                          {isRTL ? "تعديل" : "Edit"}
                         </button>
 
                         <button
@@ -807,7 +811,7 @@ const  SessionPayments = () => {
                           }
                           disabled={saving}
                         >
-                          Delete
+                          {isRTL ? "حذف" : "Delete"}
                         </button>
 
                       </div>
@@ -833,9 +837,8 @@ const  SessionPayments = () => {
 
         <div className="session-payments-section-title">
 
-          {editingPaymentID
-            ? "Update Payment"
-            : "Register New Payment"}
+          {editingPaymentID ? (isRTL ? "تحديث الدفع" : "Update Payment") : 
+                              (isRTL ? "تسجيل دفع جديد" : "Register New Payment")}
 
         </div>
 
@@ -851,7 +854,7 @@ const  SessionPayments = () => {
             <div className="session-payment-form-group">
 
               <label htmlFor="amountPaid">
-                Amount Paid
+                {isRTL ? "المبلغ المدفوع" : "Amount Paid"}
               </label>
 
               <input
@@ -875,7 +878,7 @@ const  SessionPayments = () => {
             <div className="session-payment-form-group">
 
               <label htmlFor="paymentMethod">
-                Payment Method
+                {isRTL ? "طريقة الدفع" : "Payment Method"}
               </label>
 
               <select
@@ -908,7 +911,7 @@ const  SessionPayments = () => {
           <div className="session-payment-form-group">
 
             <label htmlFor="paymentNotes">
-              Notes
+              {isRTL ? "ملاحظات" : "Notes"}
             </label>
 
             <textarea
@@ -917,7 +920,7 @@ const  SessionPayments = () => {
               onChange={(event) =>
                 setNotes(event.target.value)
               }
-              placeholder="Optional notes"
+              placeholder={isRTL ? "ملاحظات اختيارية" : "Optional notes"}
               maxLength={500}
               rows={4}
               disabled={saving}
@@ -934,11 +937,9 @@ const  SessionPayments = () => {
               className="session-payment-save-button"
               disabled={saving}
             >
-              {saving
-                ? "Saving..."
-                : editingPaymentID
-                ? "Update Payment"
-                : "Register Payment"}
+              {saving  ? isRTL ? "جارٍ الحفظ..." : "Saving..."  : editingPaymentID  ? 
+                        (isRTL ? "تحديث الدفع" : "Update Payment")  : 
+                        (isRTL ? "تسجيل دفع جديد" : "Register Payment")}
             </button>
 
             {editingPaymentID && (
@@ -948,7 +949,7 @@ const  SessionPayments = () => {
                 onClick={handleCancelEdit}
                 disabled={saving}
               >
-                Cancel
+                {isRTL ? "إلغاء" : "Cancel"}
               </button>
             )}
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useStateContext } from "../../../context/StateContext";
-
+import { useTranslation } from "react-i18next";
 
   // GET TODAY'S DATE  // =====================================================
   const getTodayDate = () => {
@@ -13,8 +13,12 @@ import { useStateContext } from "../../../context/StateContext";
     return `${year}-${month}-${day}`;
   };
 
+  
 const SessionsPage = () => {
   
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   const { userInfo } = useStateContext();
 
   // STATE
@@ -660,8 +664,8 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
       <div className="sessions-header">
         <div>
-          <h1>Sessions</h1>
-          <p>Register today &apos; s patient session</p>
+          <h1>{isRTL ? "الجلسات" : "Sessions"}</h1>
+          <p>{isRTL ? "سجل جلسة المريض اليوم" : "Register today s patient session"}</p>
         </div>
       </div>
 
@@ -683,20 +687,20 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
       <div className="sessions-section">
         <div className="sessions-section-header">
-          <h2>Select Patient</h2>
-          <span>Today &apos; s Appointments</span>
+          <h2>{isRTL ? "اختر المريض" : "Select Patient"}</h2>
+          <span>{isRTL ? "مواعيد اليوم" : "Today s Appointments"}</span>
         </div>
 
         {loading ? (
 
           <div className="sessions-loading">
-            Loading today &apos; s appointments...
+            {isRTL ? "جارٍ تحميل مواعيد اليوم..." : "Loading today s appointments..."}
           </div>
 
         ) : appointments.length === 0 ? (
 
           <div className="sessions-empty">
-            No appointments for today.
+            {isRTL ? "لا توجد مواعيد لليوم" : "No appointments for today."}
           </div>
 
         ) : (
@@ -709,12 +713,14 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
             <div className="sessions-form-group">
 
-              <label>Patient</label>
+              <label>{isRTL ? "المريض" : "Patient"}</label>
 
               <select   value={selectedAppointment?.AppointmentID || ""}
                         onChange={(e) => handleSelectAppointment(e.target.value)}
               >
-                <option value="">Select today &apos; s patient</option>
+                <option value="">
+                  {isRTL ? "اختر المريض" : "Select today s patient"}
+                </option>
 
                 {appointments.map((appointment) => (
 
@@ -748,7 +754,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
         <div className="sessions-section">
 
           <div className="sessions-section-header">
-            <h2>Register Session</h2>
+            <h2>{isRTL ? "سجل الجلسة" : "Register Session"}</h2>
             <span>{selectedAppointment.PatientName}</span>
           </div>
 
@@ -759,7 +765,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             ============================================= */}
 
             <div className="sessions-form-group">
-              <label>Patient</label>
+              <label>{isRTL ? "المريض" : "Patient"}</label>
               <input  type="text"
                       value={`${selectedAppointment.PatientName} - ${selectedAppointment.FileNo}`}
                       readOnly
@@ -774,7 +780,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <div className="sessions-form-group">
 
               <label>
-                Session Date
+                {isRTL ? "تاريخ الجلسة" : "Session Date"}
               </label>
 
 
@@ -794,7 +800,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <div className="sessions-form-group">
 
               <label>
-                Treatment Area
+                {isRTL ? "منطقة العلاج" : "Treatment Area"}
               </label>
 
 
@@ -813,9 +819,8 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
                 <option value="">
 
-                  {areasLoading
-                    ? "Loading areas..."
-                    : "Select treatment area"}
+                  {areasLoading  ? (isRTL ? "جارٍ تحميل المناطق..." : "Loading areas...")
+                    : (isRTL ? "اختر منطقة العلاج" : "Select treatment area")}
 
                 </option>
 
@@ -857,7 +862,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <div className="sessions-form-group">
 
               <label>
-                Device
+                {isRTL ? "الجهاز" : "Device"}
               </label>
 
 
@@ -876,9 +881,8 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
                 <option value="">
 
-                  {devicesLoading
-                    ? "Loading devices..."
-                    : "Select device"}
+                  {devicesLoading ? (isRTL ? "جارٍ تحميل الأجهزة..." : "Loading devices...")
+                    : (isRTL ? "اختر الجهاز" : "Select device")}
 
                 </option>
 
@@ -920,7 +924,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <div className="sessions-form-group">
 
               <label>
-                Notes
+                {isRTL ? "الملاحظات" : "Notes"}
               </label>
 
 
@@ -935,7 +939,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
                 rows={4}
 
-                placeholder="Session notes..."
+                placeholder={isRTL ? "ملاحظات الجلسة..." : "Session notes..."}
               />
 
             </div>
@@ -946,7 +950,9 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
                     onClick={handleCreateSession}
                     disabled={savingSession || !IsDoctorCase}
             >
-                {savingSession? "Saving..." : createdSession? "Update Session" : "Register Session"}
+                {savingSession? (isRTL ? "جارٍ الحفظ..." : "Saving...") : 
+                  createdSession? (isRTL ? "تحديث الجلسة" : "Update Session") : 
+                    (isRTL ? "سجل الجلسة" : "Register Session")}
             </button>
 
             {/* =============================================
@@ -957,11 +963,11 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
               <div className="sessions-success">
 
-                Session registered successfully.
+                {isRTL ? "تم تسجيل الجلسة بنجاح." : "Session registered successfully."}
 
                 <br />
 
-                Session ID:
+                {isRTL ? "معرف الجلسة:" : "Session ID:"}
                 {" "}
                 {createdSession.SessionID}
 
@@ -986,11 +992,11 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
     <div className="sessions-section-header">
 
       <h2>
-        Session Services
+        {isRTL ? "خدمات الجلسة" : "Session Services"}
       </h2>
 
       <span>
-        Session #{createdSession.SessionID}
+        {isRTL ? "الجلسة #" : "Session #"} {createdSession.SessionID}
       </span>
 
     </div>
@@ -1006,7 +1012,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
                 onClick={handleOpenServicesModal}
                 disabled={savingServices || !IsDoctorCase  }
       >
-        + Add Services
+        + {isRTL ? "إضافة خدمات" : "Add Services"}
       </button>
 
     </div>
@@ -1020,7 +1026,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
       <div className="sessions-loading">
 
-        Loading session services...
+        {isRTL ? "جارٍ تحميل خدمات الجلسة..." : "Loading session services..."}
 
       </div>
 
@@ -1028,7 +1034,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
       <div className="sessions-empty">
 
-        No services added to this session yet.
+        {isRTL ? "لم يتم إضافة خدمات إلى هذه الجلسة بعد." : "No services added to this session yet."}
 
       </div>
 
@@ -1043,27 +1049,27 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <tr>
 
               <th>
-                Service
+                {isRTL ? "الخدمة" : "Service"}
               </th>
 
               <th>
-                Qty
+                {isRTL ? "الكمية" : "Qty"}
               </th>
 
               <th>
-                Unit Price
+                {isRTL ? "سعر الوحدة" : "Unit Price"}
               </th>
 
               <th>
-                Discount
+                {isRTL ? "الخصم" : "Discount"}
               </th>
 
               <th>
-                Line Total
+                {isRTL ? "المجموع" : "Line Total"}
               </th>
 
               <th>
-                Action
+                {isRTL ? "الإجراء" : "Action"}
               </th>
 
             </tr>
@@ -1093,7 +1099,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
                     {service.CategoryID === 10 && (
                       <span className="sessions-consumable-label">
-                        Consumable
+                        {isRTL ? "مستهلك" : "Consumable"}
                       </span>
                     )}
 
@@ -1186,7 +1192,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
                         savingServices
                       }
                     >
-                      Remove
+                      {isRTL ? "إزالة" : "Remove"}
                     </button>
 
                   </td>
@@ -1213,7 +1219,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
       <div className="sessions-summary-item">
 
         <span className="sessions-summary-label">
-          Total Before Discount
+          {isRTL ? "المجموع قبل الخصم" : "Total Before Discount"}
         </span>
 
         <strong className="sessions-summary-value">
@@ -1226,7 +1232,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
       <div className="sessions-summary-item">
 
         <span className="sessions-summary-label">
-          Total Discount
+          {isRTL ? "إجمالي الخصم" : "Total Discount"}
         </span>
 
         <strong className="sessions-summary-value">
@@ -1239,7 +1245,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
       <div className="sessions-summary-item sessions-summary-net">
 
         <span className="sessions-summary-label">
-          Net Due
+          {isRTL ? "الصافي" : "Net Due"}
         </span>
 
         <strong className="sessions-summary-value">
@@ -1260,7 +1266,8 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
                 onClick={handleSaveServices}
                 disabled={savingServices || !IsDoctorCase}
       >
-        {savingServices ? "Saving Services..." : "Save Services"}
+        {savingServices ? ( isRTL ? "جارٍ حفظ الخدمات..." : "Saving Services..." ) : 
+                          ( isRTL ? "حفظ الخدمات" : "Save Services" )}
       </button>
 
     </div>
@@ -1284,7 +1291,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
           <div className="sessions-modal-header">
 
             <h2>
-              Select Services
+              {isRTL ? "اختر الخدمات" : "Select Services"}
             </h2>
 
 
@@ -1312,7 +1319,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
               <div className="sessions-empty">
 
-                No active services available.
+                {isRTL ? "لا توجد خدمات نشطة متاحة." : "No active services available."}
 
               </div>
 
@@ -1381,7 +1388,7 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
 
                         <span className="sessions-service-option-status">
 
-                          Already added
+                          {isRTL ? "مُضَاف بالفعل" : "Already added"}
 
                         </span>
 
@@ -1405,14 +1412,14 @@ const {totalBeforeDiscount, totalDiscount, netDue,} = getSessionServicesSummary(
             <button type="button" className="sessions-modal-cancel"
                     onClick={handleCloseServicesModal}
             >
-              Cancel
+              {isRTL ? "إلغاء" : "Cancel"}
             </button>
 
             <button type="button"  className="sessions-modal-add"
                     onClick={handleAddSelectedServices}
                     disabled={selectedServiceIds.length === 0}
             >
-              Add Selections
+              {isRTL ? "إضافة الاختيارات" : "Add Selections"}
             </button>
 
           </div>

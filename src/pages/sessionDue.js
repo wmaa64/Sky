@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 // GET TODAY'S DATE// ============================================================
 const getTodayDate = () => {
@@ -20,6 +21,9 @@ const formatMoney = (value) => {
 
 // SESSION DUE PAGE// ============================================================
 const SessionDue = () => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+  
   const router = useRouter();
   
   const [selectedDate, setSelectedDate] =  useState(getTodayDate());
@@ -201,8 +205,8 @@ const handleOpenPayments = () => {
       {/* HEADER */}
       <div className="session-due-header">
         <div>
-          <h1>Session Due</h1>
-          <p>View sessions and outstanding payments</p>
+          <h1>{isRTL ? "مستحقات الجلسة" : "Session Due"}</h1>
+          <p>{isRTL ? "عرض الجلسات والدفعات المعلقة" : "View sessions and outstanding payments"}</p>
         </div>
       </div>
 
@@ -216,12 +220,12 @@ const handleOpenPayments = () => {
       {/* DATE SELECTION */}
       <div className="session-due-section">
         <div className="session-due-section-header">
-          <h2>Session Date</h2>
+          <h2>{isRTL ? "تاريخ الجلسة" : "Session Date"}</h2>
         </div>
 
         <div className="session-due-date-container">
           <div className="session-due-form-group">
-            <label>Date</label>
+            <label>{isRTL ? "التاريخ" : "Date"}</label>
             <input   type="date"   value={selectedDate}   onChange={handleDateChange}/>
           </div>
         </div>
@@ -231,17 +235,17 @@ const handleOpenPayments = () => {
       {/* SESSIONS TABLE */}
       <div className="session-due-section">
         <div className="session-due-section-header">
-          <h2>Sessions</h2>
+          <h2>{isRTL ? "الجلسات" : "Sessions"}</h2>
           <span>{selectedDate}</span>
         </div>
 
         {loadingSessions ? (
           <div className="session-due-loading">
-            Loading sessions...
+            {isRTL ? "جارٍ تحميل الجلسات..." : "Loading sessions..."}
           </div>
         ) : sessions.length === 0 ? (
           <div className="session-due-empty">
-            No sessions found for this date.
+            {isRTL ? "لا توجد جلسات لهذه التاريخ." : "No sessions found for this date."}
           </div>
 
         ) : (
@@ -249,17 +253,17 @@ const handleOpenPayments = () => {
             <table className="session-due-table">
               <thead>
                 <tr>
-                  <th>Select</th>
-                  <th>Session ID</th>
-                  <th>Patient ID</th>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Time</th>
-                  <th>Services Total</th>
-                  <th>Discount</th>
-                  <th>Services Net</th>
-                  <th>Total Paid</th>
-                  <th>Remaining</th>
+                  <th>{isRTL ? "تحديد" : "Select"}</th>
+                  <th>{isRTL ? "معرف الجلسة" : "Session ID"}</th>
+                  <th>{isRTL ? "معرف المريض" : "Patient ID"}</th>
+                  <th>{isRTL ? "المريض" : "Patient"}</th>
+                  <th>{isRTL ? "الطبيب" : "Doctor"}</th>
+                  <th>{isRTL ? "الوقت" : "Time"}</th>
+                  <th>{isRTL ? "إجمالي الخدمات" : "Services Total"}</th>
+                  <th>{isRTL ? "خصم الخدمات" : "Services Discount"}</th>
+                  <th>{isRTL ? "صافى الخدمات" : "Services Net"}</th>
+                  <th>{isRTL ? "إجمالي المدفوع" : "Total Paid"}</th>
+                  <th>{isRTL ? "المتبقي" : "Remaining"}</th>
                 </tr>
               </thead>
 
@@ -302,7 +306,7 @@ const handleOpenPayments = () => {
                 onClick={handleOpenPayments}
                 disabled={!selectedSessionID}
           >
-            Session Payments
+            {isRTL ? "مدفوعات الجلسة" : "Session Payments"}
           </button>
         </div>
       </div>
@@ -311,24 +315,24 @@ const handleOpenPayments = () => {
       {selectedSession && (
         <div className="session-due-section">
           <div className="session-due-section-header">
-            <h2>Session Services</h2>
-            <span>Session #{selectedSession.SessionID}</span>
+            <h2>{isRTL ? "خدمات الجلسة" : "Session Services"}</h2>
+            <span>{isRTL ? "جلسة #" : "Session #"}{selectedSession.SessionID}</span>
           </div>
 
           {/* PATIENT INFORMATION */}
           <div className="session-due-session-info">
             <div>
-              <span>Patient</span>
+              <span>{isRTL ? "المريض" : "Patient"}</span>
               <strong>{selectedSession.PatientName}</strong>
             </div>
 
             <div>
-              <span>Doctor</span>
+              <span>{isRTL ? "الطبيب" : "Doctor"}</span>
               <strong>{selectedSession.DoctorName}</strong>
             </div>
 
             <div>
-              <span>Time</span>
+              <span>{isRTL ? "الوقت" : "Time"}</span>
               <strong>{selectedSession.SessionTime}</strong>
             </div>
           </div>
@@ -337,23 +341,23 @@ const handleOpenPayments = () => {
           {/* SERVICES */}
           {loadingServices ? (
             <div className="session-due-loading">
-              Loading session services...
+              {isRTL ? "جارٍ تحميل خدمات الجلسة..." : "Loading session services..."}
             </div>
           ) : sessionServices.length === 0 ? (
             <div className="session-due-empty">
-              No services registered for this session.
+              {isRTL ? "لا توجد خدمات مسجلة لهذه الجلسة." : "No services registered for this session."}
             </div>
           ) : (
             <div className="session-due-table-wrapper">
               <table className="session-due-services-table">
                 <thead>
                   <tr>
-                    <th>Service</th>
-                    <th>Category</th>
-                    <th>Qty</th>
-                    <th>Unit Price</th>
-                    <th>Discount</th>
-                    <th>Line Total</th>
+                    <th>{isRTL ? "الخدمة" : "Service"}</th>
+                    <th>{isRTL ? "الفئة" : "Category"}</th>
+                    <th>{isRTL ? "الكمية" : "Qty"}</th>
+                    <th>{isRTL ? "سعر الوحدة" : "Unit Price"}</th>
+                    <th>{isRTL ? "الخصم" : "Discount"}</th>
+                    <th>{isRTL ? "المجموع" : "Line Total"}</th>
                   </tr>
                 </thead>
 
@@ -386,37 +390,37 @@ const handleOpenPayments = () => {
 
             {/* TOTAL BEFORE DISCOUNT */}
             <div className="session-due-summary-item">
-              <span>Total Before Discount</span>
+              <span>{isRTL ? "إجمالي قبل الخصم" : "Total Before Discount"}</span>
               <strong>{formatMoney(totalBeforeDiscount)}</strong>
             </div>
 
             {/* TOTAL DISCOUNT */}
             <div className="session-due-summary-item">
-              <span>Total Discount</span>
+              <span>{isRTL ? "إجمالي الخصم" : "Total Discount"}</span>
               <strong>{formatMoney(totalDiscount)}</strong>
             </div>
 
             {/* SERVICES NET */}
             <div className="session-due-summary-item">
-              <span>Services Net</span>
+              <span>{isRTL ? "صافى الخدمات" : "Services Net"}</span>
               <strong>{formatMoney(servicesNet)}</strong>
             </div>
 
             {/* CONSUMABLES */}
             <div className="session-due-summary-item">
-              <span>Consumables</span>
+              <span>{isRTL ? "المواد الاستهلاكية" : "Consumables"}</span>
               <strong>{formatMoney(consumablesTotal)}</strong>
             </div>
 
             {/* TOTAL PAID */}
             <div className="session-due-summary-item">
-              <span>Total Paid</span>
+              <span>{isRTL ? "إجمالي المدفوع" : "Total Paid"}</span>
               <strong>{formatMoney(selectedSession.TotalPaid)}</strong>
             </div>
 
             {/* REMAINING */}
             <div className="session-due-summary-item session-due-summary-remaining">
-              <span>Remaining</span>
+              <span>{isRTL ? "المتبقي" : "Remaining"}</span>
               <strong>{formatMoney(selectedSession.Remaining)}</strong>
             </div>
           </div>
