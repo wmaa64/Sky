@@ -30,7 +30,8 @@ return (
     
 </>
 
-)
+);
+
 };
 
 export default Home;

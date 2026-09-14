@@ -26,46 +26,47 @@ const Layout = ({ children }) => {
 
     
 return (
-<>
-    <Head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5" />
-        <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff" />
-        <meta name="next-head-count" content="10" />
-    </Head>
+    <>
+        <Head>
+            <meta charSet="UTF-8" />
+            <meta name="viewport" content="width=device-width" />
+            <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+            <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+            <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+            <link rel="manifest" href="/site.webmanifest" />
+            <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5" />
+            <meta name="msapplication-TileColor" content="#da532c" />
+            <meta name="theme-color" content="#ffffff" />
+            <meta name="next-head-count" content="10" />
+        </Head>
 
-    <div className="stick-area" >
-        <Header />
-    </div>
+        <div className="stick-area" >
+            <Header />
+        </div>
 
-    <div className="app-layout" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="app-layout" dir={isRTL ? "rtl" : "ltr"}>
 
-        <aside className="app-navbar" >
-            <NavBar />
-        </aside>
+            <aside className="app-navbar" >
+                <NavBar />
+            </aside>
 
-        <div className="app-content" >
+            <div className="app-content" >
 
-            <main className="main-container">
-                {children}
-            </main>
+                <main className="main-container">
+                    {children}
+                </main>
 
-            <footer>
-                <Footer />
-            </footer>
+                <footer>
+                    <Footer />
+                </footer>
+
+            </div>
 
         </div>
 
-    </div>
-
-</>
+    </>
 );
+
 };
 
 export default Layout;

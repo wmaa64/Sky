@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // INITIAL FORMS
 const emptyForm = {
@@ -23,6 +24,11 @@ const frmCouponEmpty = {
 
 // PATIENTS PAGE
 const  Patients = ()=> {
+
+    const {i18n} = useTranslation();
+    
+    const isRTL = i18n.language === "ar"; // true if Arabic
+
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -348,7 +354,7 @@ const  Patients = ()=> {
         <div className="subject-header">
 
             <h1 className="subject-title">
-              Patients
+              {isRTL ? "المرضى" : "Patients"}
             </h1>
 
             <button
@@ -358,7 +364,7 @@ const  Patients = ()=> {
             >
                 <span className="subject-add-icon">+</span>
 
-                Add Patient
+                {isRTL ? "إضافة مريض" : "Add Patient"}
 
             </button>
 
@@ -375,7 +381,8 @@ const  Patients = ()=> {
             <input
               type="text"
               value={search}
-              placeholder="Search by name, phone, file number or national ID..."
+              placeholder={isRTL ? "بحث بالاسم، الهاتف، رقم الملف أو الهوية الوطنية..." : 
+                            "Search by name, phone, file number or national ID..."}
               onChange={(event) => setSearch(event.target.value ) }
               onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -389,18 +396,15 @@ const  Patients = ()=> {
                 onClick={searchPatients}
                 disabled={loading}
             >
-                {loading ? "Searching..." : "Search"}
+                {loading ? (isRTL ? "جاري البحث..." : "Searching...") : (isRTL ? "بحث" : "Search")}
             </button>
             
           </div>
 
           <div className="subject-count">
 
-            {!hasSearched
-                ? ""
-                : loading
-                ? "Searching..."
-                : `${patients.length} patient${patients.length === 1 ? "" : "s"}`
+            {!hasSearched ? ""  : loading ? (isRTL ? "جاري البحث..." : "Searching...") : 
+                (isRTL ? `${patients.length} مريض` : `${patients.length} patient${patients.length === 1 ? "" : "s"}`)
             }
 
           </div>
@@ -418,19 +422,19 @@ const  Patients = ()=> {
         {/* PATIENTS RESULTS ================================================== */}
         {loading ? (
             <div className="subject-loading">
-                Searching patients...
+                {isRTL ? "جاري البحث..." : "Searching patients..."}
             </div>
 
             ) : !hasSearched ? (
 
                 <div className="subject-search-message">
-                    Search for a patient to display results.
+                    {isRTL ? "ابحث عن مريض لعرض النتائج." : "Search for a patient to display results."}
                 </div>
 
                 ) : patients.length === 0 ? (
 
                 <div className="subject-search-message">
-                    No patients found.
+                    {isRTL ? "لم يتم العثور على مرضى." : "No patients found."}
                 </div>
 
                 ) : (
@@ -440,14 +444,14 @@ const  Patients = ()=> {
                     <table className="subject-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>File No.</th>
-                                <th>Patient Name</th>
-                                <th>Phone</th>
-                                <th>Age</th>
-                                <th>National ID</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th>{isRTL ? "المعرف" : "ID"}</th>
+                                <th>{isRTL ? "رقم الملف" : "File No."}</th>
+                                <th>{isRTL ? "اسم المريض" : "Patient Name"}</th>
+                                <th>{isRTL ? "الهاتف" : "Phone"}</th>
+                                <th>{isRTL ? "العمر" : "Age"}</th>
+                                <th>{isRTL ? "الهوية الوطنية" : "National ID"}</th>
+                                <th>{isRTL ? "تم الإنشاء" : "Created"}</th>
+                                <th>{isRTL ? "الإجراءات" : "Actions"}</th>
                             </tr>
 
                         </thead>
@@ -473,7 +477,7 @@ const  Patients = ()=> {
                                                 className="subject-coupon-button"
                                                 onClick={() => handlePatientCoupon(patient)}
                                             >
-                                                Coupon
+                                                {isRTL ? "كوبون" : "Coupon"}
                                             </button>
 
                                             <button
@@ -481,7 +485,7 @@ const  Patients = ()=> {
                                                 className="subject-edit-button"
                                                 onClick={() => handleEditPatient(patient)}
                                             >
-                                                Edit
+                                                {isRTL ? "تعديل" : "Edit"}
                                             </button>
 
                                             <button
@@ -489,7 +493,7 @@ const  Patients = ()=> {
                                                 className="subject-delete-button"
                                                 onClick={() => handleDeletePatient(patient)}
                                             >
-                                                Delete
+                                                {isRTL ? "حذف" : "Delete"}
                                             </button>
                                         </div>
                                     </td>
@@ -519,8 +523,10 @@ const  Patients = ()=> {
                 {/* MODAL HEADER */}
                 <div className="subject-modal-header">
                     <div>
-                        <h2>{editingPatient ? "Edit Patient" : "Add New Patient" }</h2>
-                        <p>{editingPatient  ? "Update patient information" : "Enter patient information"}</p>
+                        <h2>{editingPatient ? (isRTL ? "تعديل المريض" : "Edit Patient") : 
+                                              (isRTL ? "إضافة مريض جديد" : "Add New Patient")}</h2>
+                        <p>{editingPatient  ? (isRTL ? "تحديث معلومات المريض" : "Update patient information")  : 
+                                              (isRTL ? "إدخال معلومات المريض" : "Enter patient information")}</p>
                     </div>
 
                     <button  type="button"  className="subject-close-button" 
@@ -535,7 +541,7 @@ const  Patients = ()=> {
                         {/* FULL NAME  -------------------------------------- */}
                         <div className="subject-form-group subject-full-width">
 
-                            <label>Full Name *</label>
+                            <label>{isRTL ? "الاسم الكامل" : "Full Name *"}</label>
                             <input  type="text"  name="FullName"  value={formData.FullName}
                                 onChange={handleChange}
                                 placeholder="Enter patient full name"  required
@@ -546,7 +552,7 @@ const  Patients = ()=> {
                         {/* PHONE -------------------------------------- */}
                         <div className="subject-form-group">
 
-                            <label>Phone</label>
+                            <label>{isRTL ? "الهاتف" : "Phone"}</label>
                             <input  type="text"  name="Phone"   value={formData.Phone}
                                 onChange={handleChange}
                                 placeholder="Phone number"
@@ -557,7 +563,7 @@ const  Patients = ()=> {
                         {/* AGE -------------------------------------- */}
                         <div className="subject-form-group">
 
-                            <label>Age</label>
+                            <label>{isRTL ? "العمر" : "Age"}</label>
                             <input  type="number"   name="Age"   value={formData.Age}
                                 onChange={handleChange}
                                 placeholder="Age"   min="0"
@@ -568,7 +574,7 @@ const  Patients = ()=> {
                         {/* NATIONAL ID  -------------------------------------- */}
                         <div className="subject-form-group">
 
-                            <label>National ID</label>
+                            <label>{isRTL ? "الهوية الوطنية" : "National ID"}</label>
                             <input type="text"  name="NationalID"   value={formData.NationalID }
                                 onChange={handleChange }
                                 placeholder="National ID"
@@ -579,7 +585,7 @@ const  Patients = ()=> {
                         {/* ADDRESS  -------------------------------------- */}
                         <div className="subject-form-group subject-full-width">
 
-                            <label>Address</label>
+                            <label>{isRTL ? "العنوان" : "Address"}</label>
                             <input  type="text" name="Address" value={formData.Address}
                                 onChange={handleChange}
                                 placeholder="Patient address"
@@ -590,7 +596,7 @@ const  Patients = ()=> {
                         {/* NOTES  -------------------------------------- */}
                         <div className="subject-form-group subject-full-width">
 
-                            <label>Notes</label>
+                            <label>{isRTL ? "الملاحظات" : "Notes"}</label>
                             <textarea name="Notes" value={formData.Notes}
                                 onChange={handleChange}
                                 placeholder="Additional notes" rows="4"
@@ -609,11 +615,13 @@ const  Patients = ()=> {
                         <button type="button" className="subject-cancel-button"
                             onClick={handleCloseForm} disabled={saving}
                         >
-                            Cancel
+                            {isRTL ? "إلغاء" : "Cancel"}
                         </button>
 
                         <button type="submit" className="subject-save-button" disabled={saving}>
-                            {saving ? "Saving..." : editingPatient ? "Update Patient" : "Save Patient"}
+                            {saving ? (isRTL ? "جارٍ الحفظ..." : "Saving...") : 
+                                        editingPatient ? (isRTL ? "تحديث المريض" : "Update Patient") : 
+                                            (isRTL ? "حفظ المريض" : "Save Patient")}
                         </button>
 
                     </div>
@@ -648,8 +656,8 @@ const  Patients = ()=> {
             <div className="subject-modal-header">
 
                 <div>
-                    <h2>Add Coupon</h2>
-                    <p>Create a coupon for the selected patient</p>
+                    <h2>{isRTL ? "إضافة قسيمة" : "Add Coupon"}</h2>
+                    <p>{isRTL ? "إنشاء قسيمة للمريض المحدد" : "Create a coupon for the selected patient"}</p>
                 </div>
 
                 <button   type="button"    className="patients-close-button"
@@ -667,17 +675,17 @@ const  Patients = ()=> {
             {couponPatient && (
                 <div className="coupon-patient-info">
                     <div>
-                        <span>Patient</span>
+                        <span>{isRTL ? "المريض" : "Patient"}</span>
                         <strong>{couponPatient.FullName || "-"}</strong>
                     </div>
 
                     <div>
-                        <span>File No.</span>
+                        <span>{isRTL ? "رقم الملف" : "File No."}</span>
                         <strong>{couponPatient.FileNo || "-"}</strong>
                     </div>
 
                     <div>
-                        <span>Patient ID</span>
+                        <span>{isRTL ? "رقم المريض" : "Patient ID"}</span>
                         <strong>{couponPatient.PatientID}</strong>
                     </div>
                 </div>
@@ -698,13 +706,13 @@ const  Patients = ()=> {
 
                 <div className="subject-form-group">
 
-                    <label>Coupon Amount *</label>
+                    <label>{isRTL ? "مبلغ القسيمة" : "Coupon Amount *"}</label>
 
                     <select   name="Amount"   value={frmCoupon.Amount}
                         onChange={handleCouponChange}   required    disabled={couponSaving}
                     >
 
-                        <option value="">Select Amount</option>
+                        <option value="">{isRTL ? "اختر المبلغ" : "Select Amount"}</option>
 
                         {Array.from({ length: 10 }, (_, index) => {
                             const amount = (index + 1) * 100;
@@ -726,7 +734,7 @@ const  Patients = ()=> {
                 -------------------------------------- */}
 
                 <div className="subject-form-group">
-                    <label>Status</label>
+                    <label>{isRTL ? "الحالة" : "Status"}</label>
                     <input   type="text"    value="Valid"      disabled     />
                 </div>
 
@@ -736,7 +744,7 @@ const  Patients = ()=> {
 
                 <div className="subject-form-group">
 
-                    <label>From Date *</label>
+                    <label>{isRTL ? "من التاريخ" : "From Date *"}</label>
                     <input  type="date" name="FromDate"  value={frmCoupon.FromDate}
                         onChange={handleCouponChange}
                         required  disabled={couponSaving}
@@ -751,7 +759,7 @@ const  Patients = ()=> {
 
                 <div className="subject-form-group">
 
-                    <label>To Date *</label>
+                    <label>{isRTL ? "إلى التاريخ" : "To Date *"}</label>
                     <input   type="date"   name="ToDate"    value={frmCoupon.ToDate}
                         onChange={handleCouponChange}
                         required    disabled={couponSaving}
@@ -766,7 +774,7 @@ const  Patients = ()=> {
 
                 <div className="subject-form-group patients-full-width">
 
-                    <label>Notes</label>
+                    <label>{isRTL ? "الملاحظات" : "Notes"}</label>
                     <textarea   name="Notes"   value={frmCoupon.Notes}
                         onChange={handleCouponChange}     placeholder="Optional notes"
                         rows="4"     maxLength="500"   disabled={couponSaving}
@@ -786,13 +794,14 @@ const  Patients = ()=> {
                     <button   type="button"     className="subject-cancel-button"
                         onClick={handleCloseCouponForm}    disabled={couponSaving}
                     >
-                        Cancel
+                        {isRTL ? "إلغاء" : "Cancel"}
                     </button>
 
                     <button   type="submit"    className="subject-save-button"
                         disabled={couponSaving}
                     >
-                        {couponSaving  ? "Saving..."  : "Save Coupon"}
+                        {couponSaving  ? ( isRTL ? "جارٍ الحفظ..." : "Saving..." ) : 
+                                         ( isRTL ? "حفظ القسيمة" : "Save Coupon" )}
                     </button>
 
                 </div>

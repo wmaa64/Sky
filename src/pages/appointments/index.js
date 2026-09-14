@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // INITIAL FORM // =====================================================
 const emptyForm = {
@@ -19,6 +20,10 @@ const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat",];
 
 // APPOINTMENTS PAGE // =====================================================
 const Appointments = () => {
+  
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar" ;
+
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -692,15 +697,15 @@ const handleEditAppointment = async (appointment) => {
       <div className="appointments-header">
 
         <div>
-          <h1 className="appointments-title">Appointments</h1>
-          <p className="appointments-subtitle">Manage patient appointments</p>
+          <h1 className="appointments-title">{isRTL ? "المواعيد" : "Appointments"}</h1>
+          <p className="appointments-subtitle">{isRTL ? "إدارة مواعيد المرضى" : "Manage patient appointments"}</p>
         </div>
 
         <button type="button"  className="appointments-add-button"
           onClick={() => handleAddAppointment() }
         >
           <span className="appointments-add-icon">+</span>
-          Add Appointment
+          {isRTL ? "إضافة موعد" : "Add Appointment"}
         </button>
 
       </div>
@@ -713,7 +718,7 @@ const handleEditAppointment = async (appointment) => {
 
           <button  type="button"  onClick={handlePreviousMonth}> ‹ </button>
           <button  type="button"  onClick={handleToday} className="appointments-today-button">
-            Today
+            {isRTL ? "اليوم" : "Today"}
           </button>
           <button  type="button"  onClick={handleNextMonth}> › </button>
 
@@ -722,7 +727,7 @@ const handleEditAppointment = async (appointment) => {
         <h2 className="appointments-month-title">{monthNames[currentMonth]}{" "}{currentYear}</h2>
 
         <div className="appointments-total">
-          {appointments.length}{" "} appointment {appointments.length === 1 ? "" : "s"}
+          {appointments.length}{" "} {isRTL ? "مواعيد" : "appointments"} {appointments.length === 1 ? "" : "s"}
         </div>
 
       </div>
@@ -736,22 +741,22 @@ const handleEditAppointment = async (appointment) => {
 
         <div className="appointments-legend-item">
           <span className="legend-color legend-pending"></span>
-          Pending
+          {isRTL ? "قيد الانتظار" : "Pending"}
         </div>
 
         <div className="appointments-legend-item">
           <span className="legend-color legend-confirmed"></span>
-          Confirmed
+          {isRTL ? "مؤكد" : "Confirmed"}
         </div>
 
         <div className="appointments-legend-item">
           <span className="legend-color legend-done"></span>
-          Done
+          {isRTL ? "مكتمل" : "Done"}
         </div>
 
         <div className="appointments-legend-item">
           <span className="legend-color legend-cancelled"></span>
-          Cancelled
+          {isRTL ? "ملغى" : "Cancelled"}
         </div>
 
       </div>
@@ -765,7 +770,8 @@ const handleEditAppointment = async (appointment) => {
 
       {/* LOADING    ================================================= */}
       {loading ? (
-        <div className="appointments-loading">Loading appointments...</div>) : (
+        <div className="appointments-loading">{isRTL ? "جارٍ تحميل المواعيد..." 
+                  : "Loading appointments..."}</div>) : (
 
         /* CALENDAR     ================================================= */
         <div className="appointments-calendar">
@@ -864,13 +870,13 @@ const handleEditAppointment = async (appointment) => {
                                   <button  type="button"  
                                     onClick={() =>handleEditAppointment(appointment)}
                                   >
-                                    Edit
+                                    {isRTL ? "تعديل" : "Edit"}
                                   </button>
 
                                   <button  type="button"
                                     onClick={() =>handleDeleteAppointment(appointment)}
                                   >
-                                    Delete
+                                    {isRTL ? "حذف" : "Delete"}
                                   </button>
                                 
                                 </div>
@@ -915,8 +921,10 @@ const handleEditAppointment = async (appointment) => {
             <div className="appointments-modal-header">
 
               <div>
-                <h2>{editingAppointment ? "Edit Appointment" : "Add New Appointment"}</h2>
-                <p>{editingAppointment  ? "Update appointment information" : "Enter appointment information"}</p>
+                <h2>{editingAppointment ? (isRTL ? "تعديل الموعد" : "Edit Appointment") : 
+                                          (isRTL ? "إضافة موعد" : "Add New Appointment")}</h2>
+                <p>{editingAppointment  ? (isRTL ? "تحديث معلومات الموعد" : "Update appointment information") : 
+                                          (isRTL ? "إدخال معلومات الموعد" : "Enter appointment information")}</p>
               </div>
 
               <button type="button" className="appointments-close-button"
@@ -943,7 +951,7 @@ const handleEditAppointment = async (appointment) => {
                 
                 <div className="appointments-form-group appointments-full-width">
 
-                  <label>Patient *</label>
+                  <label>{isRTL ? "المريض *" : "Patient *"}</label>
 
                   {/* SELECTED PATIENT */}
                   {selectedPatient ? (
@@ -957,11 +965,11 @@ const handleEditAppointment = async (appointment) => {
                         </strong>
 
                         <span>
-                          File No: {selectedPatient.FileNo || "-"}
+                          {isRTL ? "رقم الملف:" : "File No:"} {selectedPatient.FileNo || "-"}
                         </span>
 
                         <span>
-                          Phone: {selectedPatient.Phone || "-"}
+                          {isRTL ? "الهاتف:" : "Phone:"} {selectedPatient.Phone || "-"}
                         </span>
 
                       </div>
@@ -984,7 +992,7 @@ const handleEditAppointment = async (appointment) => {
 
                         }}
                       >
-                        Change
+                        {isRTL ? "تغيير" : "Change"}
                       </button>
 
                     </div>
@@ -998,7 +1006,8 @@ const handleEditAppointment = async (appointment) => {
                         <input
                           type="text"
                           value={patientSearch}
-                          placeholder="Search patient by name or file number..."
+                          placeholder={isRTL ? "بحث عن مريض بالاسم أو رقم الملف..." : 
+                                               "Search patient by name or file number..."}
                           onChange={(event) =>
                             searchPatients(event.target.value)
                           }
@@ -1011,7 +1020,7 @@ const handleEditAppointment = async (appointment) => {
                       {searchingPatients && (
 
                         <div className="appointment-patient-searching">
-                          Searching patients...
+                          {isRTL ? "جاري البحث عن المرضى..." : "Searching patients..."}
                         </div>
 
                       )}
@@ -1052,11 +1061,11 @@ const handleEditAppointment = async (appointment) => {
                               <div className="appointment-patient-result-details">
 
                                 <span>
-                                  File No: {patient.FileNo || "-"}
+                                  {isRTL ? "رقم الملف:" : "File No:"} {patient.FileNo || "-"}
                                 </span>
 
                                 <span>
-                                  Phone: {patient.Phone || "-"}
+                                  {isRTL ? "الهاتف:" : "Phone:"} {patient.Phone || "-"}
                                 </span>
 
                               </div>
@@ -1076,7 +1085,7 @@ const handleEditAppointment = async (appointment) => {
                         patientResults.length === 0 && (
 
                         <div className="appointment-patient-no-results">
-                          No patients found.
+                          {isRTL ? "لم يتم العثور على مرضى." : "No patients found."}
                         </div>
 
                       )}
@@ -1094,7 +1103,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group">
 
                   <label>
-                    Doctor
+                    {isRTL ? "الطبيب" : "Doctor"}
                   </label>
 
                   <select
@@ -1108,7 +1117,7 @@ const handleEditAppointment = async (appointment) => {
                   >
 
                     <option value="">
-                      Select doctor
+                      {isRTL ? "اختر الطبيب" : "Select doctor"}
                     </option>
 
 
@@ -1141,7 +1150,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group">
 
                   <label>
-                    Date *
+                    {isRTL ? "التاريخ *" : "Date *"}
                   </label>
 
                   <input
@@ -1164,7 +1173,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group">
 
                   <label>
-                    Time *
+                    {isRTL ? "الوقت *" : "Time *"}
                   </label>
 
                   <input
@@ -1187,7 +1196,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group">
 
                   <label>
-                    Service *
+                    {isRTL ? "الخدمة *" : "Service *"}
                   </label>
 
                   <select
@@ -1202,7 +1211,7 @@ const handleEditAppointment = async (appointment) => {
                   >
 
                     <option value="">
-                      Select service
+                      {isRTL ? "اختر الخدمة" : "Select service"}
                     </option>
 
                     <option value="كشف">
@@ -1227,7 +1236,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group">
 
                   <label>
-                    Status
+                    {isRTL ? "الحالة" : "Status"}
                   </label>
 
                   <select
@@ -1241,19 +1250,19 @@ const handleEditAppointment = async (appointment) => {
                   >
 
                     <option value="Pending">
-                      Pending
+                      {isRTL ? "معلق" : "Pending"}
                     </option>
 
                     <option value="Confirmed">
-                      Confirmed
+                      {isRTL ? "مؤكد" : "Confirmed"}
                     </option>
 
                     <option value="Done">
-                      Done
+                      {isRTL ? "مكتمل" : "Done"}
                     </option>
 
                     <option value="Cancelled">
-                      Cancelled
+                      {isRTL ? "ملغى" : "Cancelled"}
                     </option>
 
                   </select>
@@ -1266,7 +1275,7 @@ const handleEditAppointment = async (appointment) => {
                 <div className="appointments-form-group appointments-full-width">
 
                   <label>
-                    Notes
+                    {isRTL ? "الملاحظات" : "Notes"}
                   </label>
 
                   <textarea
@@ -1300,7 +1309,7 @@ const handleEditAppointment = async (appointment) => {
                   }
                   disabled={saving}
                 >
-                  Cancel
+                  {isRTL ? "إلغاء" : "Cancel"}
                 </button>
 
 
@@ -1310,11 +1319,9 @@ const handleEditAppointment = async (appointment) => {
                   disabled={saving}
                 >
 
-                  {saving
-                    ? "Saving..."
-                    : editingAppointment
-                      ? "Update Appointment"
-                      : "Save Appointment"}
+                  {saving  ? (isRTL ? "جارٍ الحفظ..." : "Saving...") : editingAppointment ?
+                       (isRTL ? "تحديث الموعد" : "Update Appointment") :
+                       (isRTL ? "حفظ الموعد" : "Save Appointment")}
 
                 </button>
 

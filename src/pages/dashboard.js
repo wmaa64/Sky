@@ -130,7 +130,7 @@ const Dashboard = () => {
             <div className="dashboard-header">
 
                 <div>
-                    <h1>{isRTL ? "لوحة التحكم" : "Dashboard"}</h1>
+                    <h1>{isRTL ? "لوحة المعلومات" : "Dashboard"}</h1>
                     <p>{isRTL ? "مرحبا بعودتك," : "Welcome back,"}{" "}<strong>{userInfo.FullName}</strong></p>
                 </div>
 
