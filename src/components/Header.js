@@ -75,7 +75,7 @@ const Header = () => {
         
           <img className='logoStyle'
             src="/images/SkyLogo.png"
-            alt="Munchix logo"
+            alt="Sky Clinic logo"
             width={200}
             height={100}
           />

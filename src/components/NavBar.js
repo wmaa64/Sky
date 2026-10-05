@@ -95,34 +95,6 @@ const NavBar = () => {
 
 
         // -------------------------------------------------
-        // SESSIONS
-        // -------------------------------------------------
-
-        {
-            type: "link",
-            name: "sessions",
-            href: "/sessions",
-            labelEn: "Sessions",
-            labelAr: "الجلسات",
-            roleIDs: [1,2],
-        },
-
-
-        // -------------------------------------------------
-        // ACCOUNTS
-        // -------------------------------------------------
-
-        {
-            type: "link",
-            name: "accounts",
-            href: "/sessionDue",
-            labelEn: "Accounts",
-            labelAr: "الحسابات",
-            roleIDs: [1,3],
-        },
-
-
-        // -------------------------------------------------
         // APPOINTMENTS
         // -------------------------------------------------
 
@@ -135,6 +107,41 @@ const NavBar = () => {
             roleIDs: [1,3],
         },
 
+
+        // -------------------------------------------------
+        // SESSIONS
+        // -------------------------------------------------
+        {
+            type: "menu",
+            name: "sessions",
+            labelEn: "Sessions",
+            labelAr: "الجلسات",
+            roleIDs: [1,2,3],
+
+            children: [
+                {
+                    href: "/receptionSessions",
+                    labelEn: "Sessions Registration",
+                    labelAr: "تسجيل الجلسات",
+                    roleIDs: [1,3],
+                },
+
+                {
+                    href: "/sessionDue",
+                    labelEn: "Sessions Payments",
+                    labelAr: " مدفوعات الجلسات",
+                    roleIDs: [1,3],
+                },
+
+                {
+                    href: "/sessions",
+                    labelEn: "Sessions",
+                    labelAr: "الجلسات",
+                    roleIDs: [1,2],
+                },
+
+            ]
+        },
 
         // -------------------------------------------------
         // QUERIES
@@ -220,7 +227,7 @@ const NavBar = () => {
 
         <div className="navbar-container" dir={isRTL ? "rtl" : "ltr"}>
 
-            <h4>{isRTL ? "عيادة الجلدية" : "Dermatology Clinic"}</h4>
+            <h4>{isRTL ? "عيادة سكاي كلينيك" : "Sky Clinic"}</h4>
 
             {userInfo && (
                 

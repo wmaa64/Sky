@@ -116,7 +116,7 @@ const Login = () => {
 
             <div className="login-box">
 
-                <h1>ClinicPro</h1>
+                <h1>Sky Clinic</h1>
 
                 <p className="login-title">
                     Please login to continue
